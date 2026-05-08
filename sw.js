@@ -1,9 +1,9 @@
-// Simple Service Worker for PWA installability
-const CACHE_NAME = 'casino-v1';
+const CACHE_NAME = 'casino-v2';
 const urlsToCache = [
   './',
   './index.html',
   './slot-game.html',
+  './lotto-game.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
@@ -19,7 +19,11 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('activate', event => {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(
+    caches.keys().then(keys => Promise.all(
+      keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+    )).then(() => self.clients.claim())
+  );
 });
 
 self.addEventListener('fetch', event => {

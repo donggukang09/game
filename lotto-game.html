@@ -1,0 +1,1718 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>🎰 럭키 가챠 로또</title>
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="LUCKY GACHA">
+<meta name="theme-color" content="#0a0508">
+
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Bungee&family=Bungee+Shade&family=Black+Han+Sans&family=Jua&display=swap" rel="stylesheet">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+--gold:#FFD700;--gold2:#FFA500;--gold-dark:#8B6914;--gold-deep:#5C4A0F;
+--red:#E60012;--red-deep:#8B0000;--red-dark:#4A0000;
+--cream:#FFF8DC;--ivory:#FFFAF0;
+--neon-pink:#FF10F0;--neon-cyan:#00FFFF;--neon-green:#39FF14;--neon-purple:#BF00FF;--neon-orange:#FF6B00;
+--velvet:#1a0511;--bg:#0a0508;
+/* Lotto ball colors */
+--ball-1:#FBC400;--ball-2:#69C8F2;--ball-3:#FF7272;--ball-4:#AAAAAA;--ball-5:#B0D840;
+--pixel:'Press Start 2P','Courier New',monospace;
+--retro:'VT323','Courier New',monospace;
+--display:'Bungee',Impact,sans-serif;
+--display-shade:'Bungee Shade',Impact,sans-serif;
+--korean-bold:'Black Han Sans','Jua','Malgun Gothic',sans-serif;
+--korean:'Jua','Malgun Gothic','맑은 고딕',sans-serif;
+}
+html,body{height:100%;-webkit-text-size-adjust:100%;background:#000}
+body{
+font-family:var(--korean);
+color:var(--cream);
+display:flex;justify-content:center;
+background:radial-gradient(ellipse at center,#1a0511 0%,#000 100%);
+overscroll-behavior:none;min-height:100vh;
+}
+
+#app{
+width:100%;max-width:480px;min-height:100vh;min-height:100dvh;
+position:relative;overflow-x:hidden;
+background:
+radial-gradient(ellipse at top,#2a0820 0%,transparent 50%),
+radial-gradient(ellipse at bottom,#3d1a0a 0%,transparent 60%),
+linear-gradient(180deg,#0d0205 0%,#1a0511 50%,#0d0205 100%);
+}
+#app::before{
+content:'';position:absolute;inset:0;pointer-events:none;z-index:0;opacity:.06;
+background-image:
+repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,255,255,.5) 2px,rgba(255,255,255,.5) 3px),
+repeating-linear-gradient(90deg,transparent,transparent 2px,rgba(255,255,255,.3) 2px,rgba(255,255,255,.3) 3px);
+mix-blend-mode:overlay;
+}
+
+/* MARQUEE */
+.marquee{
+position:fixed;top:0;left:50%;transform:translateX(-50%);
+width:100%;max-width:480px;height:100vh;height:100dvh;
+pointer-events:none;z-index:1;
+}
+.bulb{
+position:absolute;width:6px;height:6px;border-radius:50%;
+background:radial-gradient(circle at 30% 30%,#fff,var(--gold) 40%,var(--gold-dark) 90%);
+box-shadow:0 0 4px var(--gold),0 0 8px rgba(255,215,0,.5);
+transition:opacity .12s;
+}
+.bulb.off{background:radial-gradient(circle at 30% 30%,#3d2807,#1a0f00);box-shadow:none}
+
+/* SCREENS */
+.screen{
+position:relative;z-index:3;padding:20px 18px 30px;
+min-height:100vh;min-height:100dvh;
+display:none;flex-direction:column;
+}
+.screen.active{display:flex}
+
+/* TOP BAR */
+.topbar{
+display:flex;align-items:center;justify-content:space-between;
+margin-bottom:14px;
+}
+.back-btn{
+background:rgba(0,0,0,.4);border:2px solid var(--gold-dark);color:var(--gold);
+font-family:var(--pixel);font-size:8px;
+padding:7px 12px;border-radius:6px;letter-spacing:1.5px;cursor:pointer;
+-webkit-tap-highlight-color:transparent;
+}
+.back-btn:active{background:rgba(255,215,0,.1)}
+.tab-bar{display:flex;gap:6px;flex:1;margin:0 12px}
+.tab-btn{
+flex:1;padding:7px 4px;border:2px solid var(--gold-dark);
+border-radius:6px;background:rgba(0,0,0,.4);
+color:var(--gold);font-family:var(--pixel);font-size:7px;
+letter-spacing:1px;cursor:pointer;transition:all .15s;
+-webkit-tap-highlight-color:transparent;
+}
+.tab-btn.active{background:linear-gradient(180deg,var(--gold),var(--gold-dark));color:var(--red-deep);border-color:var(--gold)}
+
+/* === HEADER === */
+.lobby-header{
+text-align:center;margin-top:8px;margin-bottom:10px;
+display:flex;flex-direction:column;align-items:center;
+}
+.head-frame{
+position:relative;padding:14px 24px;
+border:3px solid var(--gold);border-radius:14px;
+background:repeating-linear-gradient(45deg,#2a0820,#2a0820 4px,#1a0511 4px,#1a0511 8px);
+box-shadow:0 0 0 2px var(--red),0 0 20px rgba(255,215,0,.4),inset 0 0 15px rgba(0,0,0,.7);
+}
+.head-frame::before,.head-frame::after{
+content:'★';position:absolute;font-size:14px;color:var(--gold);
+text-shadow:0 0 8px var(--gold);
+}
+.head-frame::before{top:-10px;left:50%;transform:translateX(-50%);background:#0a0508;padding:0 5px}
+.head-frame::after{bottom:-10px;left:50%;transform:translateX(-50%);background:#0a0508;padding:0 5px}
+.head-line1{font-family:var(--display-shade);font-size:18px;letter-spacing:2px;color:var(--gold);line-height:1}
+.head-line2{
+font-family:var(--display);font-size:32px;letter-spacing:3px;color:var(--red);
+text-shadow:2px 2px 0 var(--gold),3px 3px 0 var(--red-deep),0 0 12px rgba(230,0,18,.6);
+line-height:.95;margin-top:4px;
+}
+.head-line3{font-family:var(--pixel);font-size:7px;letter-spacing:3px;color:var(--neon-cyan);text-shadow:0 0 6px var(--neon-cyan);margin-top:8px}
+
+/* GAME TYPE TOGGLE */
+.game-toggle{
+display:flex;background:rgba(0,0,0,.5);
+border:2px solid var(--gold-dark);border-radius:10px;
+padding:4px;margin:14px 0 18px;gap:4px;
+}
+.toggle-btn{
+flex:1;padding:10px 6px;border:none;border-radius:7px;
+background:transparent;color:rgba(255,215,0,.5);
+font-family:var(--korean-bold);font-size:13px;letter-spacing:1px;
+cursor:pointer;transition:all .2s;
+-webkit-tap-highlight-color:transparent;
+}
+.toggle-btn.active{
+background:linear-gradient(180deg,var(--red),var(--red-deep));
+color:var(--gold);
+box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 2px 4px rgba(0,0,0,.4);
+text-shadow:1px 1px 0 var(--red-dark);
+}
+.toggle-btn.active .toggle-tag{color:var(--gold)}
+.toggle-tag{font-family:var(--pixel);font-size:6px;letter-spacing:1px;color:rgba(255,215,0,.4);display:block;margin-top:2px}
+
+/* === BANDAI GACHA MACHINE (Realistic) === */
+.gacha-stage{
+display:flex;flex-direction:column;align-items:center;
+flex:1;justify-content:center;
+}
+
+.gacha-machine{
+position:relative;width:280px;
+margin:0 auto;
+filter:drop-shadow(0 12px 24px rgba(0,0,0,.6));
+}
+
+/* MACHINE BODY (white/cream plastic) */
+.machine-body{
+position:relative;width:100%;
+background:linear-gradient(180deg,#FAF6EE 0%,#F2EBDC 50%,#E8DFC8 100%);
+border-radius:16px 16px 8px 8px;
+padding:0;
+box-shadow:
+inset 0 2px 0 rgba(255,255,255,.9),
+inset 4px 0 8px rgba(0,0,0,.04),
+inset -4px 0 8px rgba(0,0,0,.06),
+inset 0 -3px 6px rgba(0,0,0,.1);
+overflow:hidden;
+}
+
+/* TOP HEADER WITH BANDAI LOGO */
+.machine-header{
+position:relative;
+background:linear-gradient(180deg,#FAF6EE 0%,#F2EBDC 100%);
+padding:14px 16px 6px;
+text-align:center;
+}
+.bandai-logo{
+display:inline-block;
+background:linear-gradient(180deg,#E60012,#B00010);
+color:#fff;
+font-family:Impact,Arial,sans-serif;
+font-weight:900;
+font-size:13px;letter-spacing:3px;
+padding:4px 14px;
+border-radius:3px;
+box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 1px 2px rgba(0,0,0,.3);
+text-shadow:1px 1px 0 rgba(0,0,0,.3);
+position:relative;
+}
+.bandai-logo::before{
+content:'';position:absolute;left:-1px;top:50%;transform:translateY(-50%);
+width:3px;height:80%;background:#fff;border-radius:1px;
+}
+.bandai-logo::after{
+content:'';position:absolute;right:-1px;top:50%;transform:translateY(-50%);
+width:3px;height:80%;background:#fff;border-radius:1px;
+}
+
+/* DISPLAY WINDOW */
+.display-window{
+position:relative;
+margin:6px 14px 0;
+background:#fff;
+border:3px solid #DDD2BC;
+border-radius:6px;
+overflow:hidden;
+height:240px;
+box-shadow:
+inset 0 0 8px rgba(0,0,0,.15),
+inset 0 2px 4px rgba(0,0,0,.1);
+}
+
+/* Glass reflection on window */
+.display-window::before{
+content:'';position:absolute;
+top:0;left:0;width:35%;height:100%;
+background:linear-gradient(135deg,rgba(255,255,255,.7) 0%,rgba(255,255,255,.2) 50%,transparent 80%);
+pointer-events:none;z-index:5;
+}
+.display-window::after{
+content:'';position:absolute;
+top:8%;left:10%;width:18%;height:40%;
+background:linear-gradient(135deg,rgba(255,255,255,.9) 0%,rgba(255,255,255,.3) 100%);
+border-radius:50%;filter:blur(3px);
+pointer-events:none;z-index:5;
+}
+
+/* POSTER inside window (lotto themed advertisement) */
+.poster{
+position:absolute;inset:0;
+background:linear-gradient(180deg,#FFD700 0%,#FFA500 50%,#FF6B00 100%);
+display:flex;flex-direction:column;align-items:center;justify-content:center;
+z-index:1;
+overflow:hidden;
+}
+.poster::before{
+content:'';position:absolute;inset:0;
+background:
+radial-gradient(circle at 20% 30%,rgba(255,255,255,.3) 0%,transparent 30%),
+radial-gradient(circle at 80% 70%,rgba(230,0,18,.2) 0%,transparent 40%);
+}
+.poster-banner{
+background:#E60012;color:#FFD700;
+font-family:var(--display);font-size:14px;letter-spacing:2px;
+padding:5px 16px;
+transform:rotate(-3deg);
+border:2px solid #fff;
+box-shadow:0 2px 6px rgba(0,0,0,.4);
+text-shadow:1px 1px 0 #800;
+margin-bottom:8px;
+position:relative;z-index:2;
+}
+.poster-title{
+font-family:var(--display-shade);font-size:36px;
+color:#fff;
+text-shadow:
+2px 2px 0 #E60012,
+3px 3px 0 #800,
+0 0 12px rgba(255,255,255,.6);
+line-height:1;
+position:relative;z-index:2;
+}
+.poster-sub{
+font-family:var(--korean-bold);font-size:14px;
+color:#E60012;
+text-shadow:1px 1px 0 #fff;
+margin-top:6px;
+letter-spacing:1px;
+position:relative;z-index:2;
+}
+.poster-7s{
+display:flex;gap:6px;margin-top:8px;
+position:relative;z-index:2;
+}
+.poster-7{
+font-family:var(--display);font-size:32px;
+color:#E60012;
+text-shadow:
+-1px -1px 0 #fff,1px -1px 0 #fff,
+-1px 1px 0 #fff,1px 1px 0 #fff,
+2px 2px 0 #800,
+0 0 8px rgba(255,255,255,.8);
+animation:poster7Pulse 1.5s ease-in-out infinite;
+line-height:1;
+}
+.poster-7:nth-child(2){animation-delay:.3s}
+.poster-7:nth-child(3){animation-delay:.6s}
+@keyframes poster7Pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15) rotate(-3deg)}}
+
+/* BALLS LAYER (above poster, in front) */
+.balls-container{
+position:absolute;inset:0;
+overflow:hidden;
+z-index:3;
+}
+.ball{
+position:absolute;
+border-radius:50%;
+display:flex;align-items:center;justify-content:center;
+font-family:var(--korean-bold);
+font-size:14px;font-weight:900;
+color:#fff;
+text-shadow:1px 1px 2px rgba(0,0,0,.8);
+box-shadow:
+inset -3px -3px 6px rgba(0,0,0,.3),
+inset 3px 3px 5px rgba(255,255,255,.5),
+0 2px 4px rgba(0,0,0,.4);
+will-change:transform;
+}
+.ball.size-1{width:32px;height:32px;font-size:12px}
+.ball.size-2{width:36px;height:36px;font-size:14px}
+.ball.size-3{width:40px;height:40px;font-size:16px}
+
+/* Lotto ball colors */
+.ball.color-1{background:radial-gradient(circle at 30% 30%,#FFE066 0%,#FBC400 50%,#A88200 100%)}
+.ball.color-2{background:radial-gradient(circle at 30% 30%,#A0DFFA 0%,#69C8F2 50%,#3a92c7 100%)}
+.ball.color-3{background:radial-gradient(circle at 30% 30%,#FFA0A0 0%,#FF7272 50%,#c74040 100%)}
+.ball.color-4{background:radial-gradient(circle at 30% 30%,#D0D0D0 0%,#888 50%,#555 100%)}
+.ball.color-5{background:radial-gradient(circle at 30% 30%,#D5F080 0%,#B0D840 50%,#7a9a20 100%)}
+.ball.color-pension{background:radial-gradient(circle at 30% 30%,#FFE066 0%,#FFA500 50%,#cc6600 100%)}
+
+/* CONTROL PANEL (bottom section with knob) */
+.control-panel{
+position:relative;
+margin:14px 14px 0;
+padding:14px 0 8px;
+border-top:1px solid rgba(0,0,0,.08);
+display:grid;
+grid-template-columns:60px 1fr 60px;
+gap:8px;align-items:center;
+}
+
+/* COIN LABEL (left side - blue square) */
+.coin-label{
+position:relative;
+background:linear-gradient(180deg,#A8DCEE,#7DBED4);
+border:1.5px solid #5A9FB8;
+border-radius:6px;
+padding:6px 4px;text-align:center;
+box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 1px 2px rgba(0,0,0,.15);
+height:48px;
+display:flex;flex-direction:column;justify-content:center;
+}
+.coin-label-jp{
+font-family:'Yu Gothic','Hiragino Sans','Meiryo',sans-serif;
+font-size:7px;color:#1a4866;letter-spacing:.5px;
+margin-bottom:2px;
+}
+.coin-label-en{
+font-family:Impact,Arial,sans-serif;font-size:11px;
+color:#1a4866;letter-spacing:1px;
+}
+.coin-label-num{
+font-family:'Yu Gothic','Meiryo',sans-serif;
+font-size:7px;color:#1a4866;margin-top:2px;
+}
+
+/* KNOB GROOVE (center - the colorful curved track) */
+.knob-area{
+position:relative;
+height:64px;
+display:flex;align-items:center;justify-content:center;
+}
+.knob-track{
+position:absolute;
+left:50%;top:50%;transform:translate(-50%,-50%);
+width:108px;height:60px;
+}
+/* Outer arc - the U shape */
+.knob-track::before{
+content:'';position:absolute;
+left:0;top:0;width:100%;height:100%;
+border:6px solid #1976D2;
+border-top-color:transparent;
+border-radius:0 0 60px 60px / 0 0 35px 35px;
+box-shadow:inset 0 -2px 4px rgba(255,193,7,.6);
+}
+/* Yellow highlight inside the arc */
+.knob-track::after{
+content:'';position:absolute;
+left:5px;top:5px;width:calc(100% - 10px);height:calc(100% - 5px);
+border:3px solid #FFC107;
+border-top-color:transparent;
+border-radius:0 0 50px 50px / 0 0 30px 30px;
+opacity:.85;
+}
+/* Arrow indicator */
+.knob-arrow{
+position:absolute;
+left:14px;top:50%;
+font-size:14px;color:#1976D2;
+transform:translateY(-50%);
+z-index:3;
+font-weight:900;
+}
+
+.knob-base{
+position:relative;
+width:54px;height:54px;
+background:radial-gradient(circle at 30% 30%,#FAF6EE 0%,#E8DFC8 50%,#C8B89A 100%);
+border-radius:50%;
+border:2px solid #B5A380;
+box-shadow:
+inset 0 2px 4px rgba(255,255,255,.7),
+inset 0 -3px 6px rgba(0,0,0,.15),
+0 2px 4px rgba(0,0,0,.2);
+display:flex;align-items:center;justify-content:center;
+cursor:pointer;
+z-index:2;
+-webkit-tap-highlight-color:transparent;
+transition:transform .15s;
+}
+.knob-base:active{transform:scale(.95)}
+.knob{
+position:relative;
+width:42px;height:42px;
+background:radial-gradient(circle at 30% 30%,#FAF6EE 0%,#D8CBAD 100%);
+border-radius:50%;
+box-shadow:inset 0 0 4px rgba(0,0,0,.1);
+}
+.knob.spinning{animation:knobSpin 1s linear infinite}
+@keyframes knobSpin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+/* Knob slot indicator (the line) */
+.knob-slot{
+position:absolute;
+left:50%;top:50%;
+width:6px;height:30px;
+background:linear-gradient(180deg,#5A4A2A,#3A2D17);
+border-radius:3px;
+transform:translate(-50%,-50%);
+box-shadow:inset 0 0 2px rgba(0,0,0,.5);
+}
+
+/* RIGHT SIDE - COIN SLOT */
+.coin-slot-panel{
+position:relative;
+height:48px;
+display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+}
+.coin-slot-label{
+font-family:Impact,Arial,sans-serif;font-size:8px;
+color:#1976D2;letter-spacing:1px;
+background:#fff;border:1px solid #1976D2;
+padding:1px 4px;border-radius:3px;
+margin-bottom:3px;
+}
+.coin-slot-actual{
+position:relative;
+width:30px;height:32px;
+background:linear-gradient(180deg,#E0D6BC,#C4B89A);
+border:1.5px solid #8B7B5C;
+border-radius:4px;
+box-shadow:inset 0 1px 0 rgba(255,255,255,.4),inset 0 -2px 3px rgba(0,0,0,.2);
+display:flex;align-items:center;justify-content:center;
+}
+.coin-slot-actual::before{
+content:'';
+width:3px;height:18px;
+background:#000;
+border-radius:1px;
+box-shadow:inset 0 0 2px rgba(255,255,255,.2),0 0 2px rgba(0,0,0,.5);
+}
+/* Small button */
+.coin-slot-panel::after{
+content:'';
+width:8px;height:8px;
+background:radial-gradient(circle at 30% 30%,#FAF6EE,#A89878);
+border-radius:50%;
+margin-top:3px;
+box-shadow:0 1px 2px rgba(0,0,0,.3),inset 0 -1px 2px rgba(0,0,0,.2);
+}
+
+/* GACHAPON LABEL (small text below) */
+.gachapon-label{
+position:relative;
+text-align:left;padding:0 16px 6px;
+margin-top:-2px;
+}
+.gachapon-text{
+display:inline-block;
+font-family:Impact,Arial,sans-serif;
+font-size:7px;
+color:#E60012;
+letter-spacing:.5px;
+}
+.gachapon-text::before{
+content:'★';margin-right:2px;color:#E60012;
+}
+
+/* DELIVERY (large square slot at bottom) */
+.delivery-area{
+position:relative;
+margin:10px 14px 14px;
+padding:8px;
+background:linear-gradient(180deg,#E8DFC8,#D8CBAD);
+border:1.5px solid #B5A380;
+border-radius:6px;
+box-shadow:inset 0 1px 0 rgba(255,255,255,.5),inset 0 -2px 3px rgba(0,0,0,.1);
+}
+.delivery-slot{
+position:relative;
+width:100%;height:50px;
+background:linear-gradient(180deg,#1a1a1a 0%,#000 50%,#0a0a0a 100%);
+border:2px solid #4a4a4a;
+border-radius:4px;
+box-shadow:inset 0 4px 8px rgba(0,0,0,.9),inset 0 -2px 4px rgba(0,0,0,.7);
+overflow:hidden;
+display:flex;align-items:center;justify-content:center;
+}
+.delivery-flap{
+position:absolute;top:0;left:0;right:0;
+height:100%;
+background:
+linear-gradient(180deg,rgba(255,255,255,.05) 0%,transparent 30%,rgba(0,0,0,.4) 100%),
+linear-gradient(180deg,#FAF6EE,#D8CBAD);
+border-bottom:1.5px solid #8B7B5C;
+transform-origin:top center;
+transition:transform .4s;
+display:flex;align-items:center;justify-content:center;
+}
+.delivery-flap.open{transform:rotateX(85deg)}
+.delivery-flap-text{
+font-family:Impact,Arial,sans-serif;font-size:11px;
+color:#5A4A2A;letter-spacing:2px;
+}
+.delivery-empty-text{
+font-family:Impact,Arial,sans-serif;font-size:9px;
+color:#666;letter-spacing:2px;
+}
+
+/* WARNING LABEL (small yellow sticker bottom right) */
+.warning-label{
+position:absolute;bottom:18px;right:18px;
+background:#FFD700;
+border:1px solid #B8860B;
+padding:2px 4px;
+font-size:5px;
+color:#5A4A2A;
+border-radius:2px;
+font-family:'Yu Gothic',sans-serif;
+line-height:1.2;
+text-align:center;
+max-width:50px;
+box-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+
+/* PULL/SPIN HINT */
+.spin-hint{
+font-family:var(--pixel);font-size:7px;letter-spacing:2px;
+color:var(--gold);text-shadow:0 0 4px var(--gold);
+margin-top:8px;text-align:center;
+animation:hintBlink 1s infinite;
+}
+@keyframes hintBlink{0%,100%{opacity:.4}50%{opacity:1}}
+
+/* === RESULT BALLS DISPLAY === */
+.result-tray{
+margin-top:18px;width:100%;max-width:380px;
+display:flex;flex-direction:column;align-items:center;
+gap:14px;
+}
+.result-set{
+width:100%;
+background:linear-gradient(135deg,#2a0820 0%,#1a0511 100%);
+border:2px solid var(--gold-dark);border-radius:14px;
+padding:14px;
+position:relative;
+animation:setIn .5s ease-out;
+}
+@keyframes setIn{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.set-header{
+display:flex;justify-content:space-between;align-items:center;
+margin-bottom:10px;padding-bottom:8px;
+border-bottom:1px dashed rgba(255,215,0,.3);
+}
+.set-num{
+font-family:var(--pixel);font-size:7px;letter-spacing:1.5px;
+color:var(--neon-cyan);text-shadow:0 0 4px var(--neon-cyan);
+}
+.set-tag{
+font-family:var(--korean-bold);font-size:11px;
+color:var(--gold);
+}
+.set-balls{
+display:flex;justify-content:center;gap:6px;flex-wrap:wrap;
+}
+.result-ball{
+width:38px;height:38px;border-radius:50%;
+display:flex;align-items:center;justify-content:center;
+font-family:var(--korean-bold);font-size:14px;color:#fff;
+text-shadow:1px 1px 2px rgba(0,0,0,.8);
+box-shadow:
+inset -3px -3px 6px rgba(0,0,0,.3),
+inset 3px 3px 5px rgba(255,255,255,.4),
+0 2px 4px rgba(0,0,0,.5);
+animation:ballPop .4s ease-out backwards;
+}
+.result-ball.color-1{background:radial-gradient(circle at 30% 30%,#FFE066,#FBC400,#A88200)}
+.result-ball.color-2{background:radial-gradient(circle at 30% 30%,#A0DFFA,#69C8F2,#3a92c7)}
+.result-ball.color-3{background:radial-gradient(circle at 30% 30%,#FFA0A0,#FF7272,#c74040)}
+.result-ball.color-4{background:radial-gradient(circle at 30% 30%,#D0D0D0,#888,#555)}
+.result-ball.color-5{background:radial-gradient(circle at 30% 30%,#D5F080,#B0D840,#7a9a20)}
+.result-ball.matched{
+animation:ballMatched 1s ease-in-out infinite;
+}
+@keyframes ballMatched{
+0%,100%{transform:scale(1);box-shadow:inset -3px -3px 6px rgba(0,0,0,.3),inset 3px 3px 5px rgba(255,255,255,.4),0 0 8px var(--gold)}
+50%{transform:scale(1.15);box-shadow:inset -3px -3px 6px rgba(0,0,0,.3),inset 3px 3px 5px rgba(255,255,255,.4),0 0 20px var(--gold),0 0 30px var(--neon-pink)}
+}
+@keyframes ballPop{from{transform:scale(0) rotate(-180deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
+
+/* PENSION LOTTO BALLS */
+.pension-set{
+display:flex;justify-content:center;gap:6px;
+}
+.pension-ball{
+width:42px;height:54px;
+background:linear-gradient(180deg,#FFE066,#FFA500,#cc6600);
+border:2px solid var(--gold-deep);border-radius:8px;
+display:flex;align-items:center;justify-content:center;
+font-family:var(--display);font-size:24px;color:#fff;
+text-shadow:2px 2px 0 var(--red-deep);
+box-shadow:inset 0 -3px 6px rgba(0,0,0,.3),inset 0 2px 0 rgba(255,255,255,.4),0 3px 6px rgba(0,0,0,.5);
+animation:ballPop .4s ease-out backwards;
+}
+.pension-set-row{
+display:flex;flex-direction:column;align-items:center;gap:8px;
+}
+.pension-group-label{
+font-family:var(--pixel);font-size:7px;letter-spacing:1.5px;
+color:var(--gold);
+}
+
+/* CONTROLS */
+.spin-controls{
+display:flex;flex-direction:column;gap:10px;
+margin-top:18px;width:100%;max-width:380px;
+}
+.set-counter{
+display:flex;align-items:center;justify-content:center;gap:14px;
+margin-bottom:4px;
+}
+.counter-label{
+font-family:var(--pixel);font-size:8px;letter-spacing:2px;
+color:var(--gold);text-shadow:0 0 4px var(--gold);
+}
+.counter-buttons{
+display:flex;align-items:center;gap:8px;
+background:rgba(0,0,0,.5);border:2px solid var(--gold-dark);
+border-radius:10px;padding:4px;
+}
+.counter-btn{
+width:30px;height:30px;border:none;border-radius:6px;
+background:linear-gradient(180deg,var(--red),var(--red-deep));
+color:var(--gold);font-family:var(--display);font-size:14px;
+cursor:pointer;-webkit-tap-highlight-color:transparent;
+}
+.counter-btn:active{transform:translateY(1px)}
+.counter-value{
+font-family:var(--display);font-size:18px;color:var(--gold);
+min-width:30px;text-align:center;
+text-shadow:0 0 6px var(--gold);
+}
+
+.action-btn{
+position:relative;width:100%;padding:0;border:none;border-radius:14px;
+background:linear-gradient(180deg,#FFD700 0%,#FFA500 50%,#8B6914 100%);
+cursor:pointer;
+box-shadow:inset 0 2px 0 rgba(255,255,255,.5),inset 0 -3px 0 var(--gold-deep),0 4px 0 var(--gold-deep),0 6px 14px rgba(0,0,0,.5);
+transition:all .12s;overflow:hidden;
+-webkit-tap-highlight-color:transparent;
+}
+.action-btn-inner{
+display:flex;align-items:center;justify-content:center;gap:8px;
+padding:14px 16px;
+font-family:var(--display);font-size:18px;letter-spacing:2px;
+color:var(--red-deep);
+text-shadow:1px 1px 0 rgba(255,215,0,.6);
+border:2px solid var(--red-deep);border-radius:11px;margin:3px;
+}
+.action-btn:disabled{opacity:.5;cursor:not-allowed}
+.action-btn:not(:disabled):active{transform:translateY(3px);box-shadow:inset 0 2px 0 rgba(255,255,255,.5),inset 0 -3px 0 var(--gold-deep),0 1px 0 var(--gold-deep)}
+.action-btn.spinning{animation:btnPulse .4s infinite alternate}
+@keyframes btnPulse{0%{box-shadow:inset 0 2px 0 rgba(255,255,255,.5),inset 0 -3px 0 var(--gold-deep),0 4px 0 var(--gold-deep),0 0 16px var(--gold)}100%{box-shadow:inset 0 2px 0 rgba(255,255,255,.5),inset 0 -3px 0 var(--gold-deep),0 4px 0 var(--gold-deep),0 0 32px var(--gold),0 0 50px var(--neon-pink)}}
+
+.btn-row{display:flex;gap:8px;margin-top:10px;width:100%;max-width:380px}
+.sec-btn{
+flex:1;padding:11px 4px;border:2px solid var(--gold-dark);
+border-radius:8px;
+background:linear-gradient(180deg,#2a0820,#1a0511);
+color:var(--gold);font-family:var(--pixel);font-size:8px;
+cursor:pointer;letter-spacing:1px;
+-webkit-tap-highlight-color:transparent;
+}
+.sec-btn:active{background:linear-gradient(180deg,#3a1230,#2a0820);border-color:var(--gold)}
+
+/* === COMPARE SCREEN === */
+.compare-section{margin-top:14px}
+.compare-input-row{
+display:flex;gap:8px;margin-bottom:14px;
+}
+.compare-input{
+flex:1;background:rgba(0,0,0,.5);border:2px solid var(--gold-dark);
+border-radius:10px;padding:10px 12px;color:var(--ivory);
+font-family:var(--korean);font-size:14px;outline:none;
+}
+.compare-input:focus{border-color:var(--gold)}
+.compare-input::placeholder{color:rgba(255,248,220,.3)}
+.compare-btn{
+padding:10px 14px;border:2px solid var(--gold-deep);border-radius:10px;
+background:linear-gradient(180deg,var(--gold),var(--gold-dark));
+color:var(--red-deep);font-family:var(--display);font-size:13px;
+cursor:pointer;letter-spacing:1px;white-space:nowrap;
+}
+.compare-result-card{
+background:linear-gradient(135deg,#2a0820 0%,#1a0511 100%);
+border:2px solid var(--gold);border-radius:14px;
+padding:16px;margin-bottom:12px;
+}
+.compare-rank{
+font-family:var(--display-shade);font-size:24px;
+text-align:center;margin-bottom:8px;
+}
+.compare-rank.rank-1{background:linear-gradient(180deg,#FFD700,#FF0000);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 12px var(--gold))}
+.compare-rank.rank-2{color:var(--neon-cyan);text-shadow:0 0 8px var(--neon-cyan)}
+.compare-rank.rank-3{color:var(--neon-green);text-shadow:0 0 8px var(--neon-green)}
+.compare-rank.rank-4{color:var(--neon-orange);text-shadow:0 0 8px var(--neon-orange)}
+.compare-rank.rank-5{color:#aaa}
+.compare-rank.rank-none{color:#666}
+.compare-prize{
+font-family:var(--korean-bold);font-size:16px;color:var(--gold);
+text-align:center;margin-bottom:10px;
+}
+.compare-balls-row{
+display:flex;justify-content:center;gap:6px;flex-wrap:wrap;
+margin:6px 0;
+}
+.compare-label{
+font-family:var(--pixel);font-size:7px;letter-spacing:1.5px;
+color:var(--neon-cyan);text-align:center;margin:8px 0 4px;
+}
+.no-compare-msg{
+text-align:center;font-family:var(--korean);
+color:rgba(255,248,220,.5);font-size:13px;
+padding:30px 14px;
+}
+
+/* === HISTORY === */
+.history-list{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.history-item{
+background:linear-gradient(135deg,#2a0820 0%,#1a0511 100%);
+border:2px solid var(--gold-dark);border-radius:12px;
+padding:12px;
+}
+.history-date{
+font-family:var(--pixel);font-size:7px;letter-spacing:1.5px;
+color:var(--neon-cyan);margin-bottom:8px;
+}
+.history-balls{display:flex;justify-content:center;gap:5px;flex-wrap:wrap}
+.history-ball{
+width:30px;height:30px;border-radius:50%;
+display:flex;align-items:center;justify-content:center;
+font-family:var(--korean-bold);font-size:11px;color:#fff;
+text-shadow:1px 1px 2px rgba(0,0,0,.8);
+box-shadow:inset -2px -2px 4px rgba(0,0,0,.3),inset 2px 2px 3px rgba(255,255,255,.4);
+}
+.history-empty{
+text-align:center;font-family:var(--korean);
+color:rgba(255,248,220,.4);font-size:13px;
+padding:40px 14px;
+}
+.delete-btn{
+background:none;border:none;color:var(--red);
+font-size:14px;cursor:pointer;padding:0 4px;float:right;margin-top:-4px;
+}
+
+/* === STATS === */
+.stats-card{
+background:linear-gradient(135deg,#2a0820 0%,#1a0511 100%);
+border:2px solid var(--gold);border-radius:14px;
+padding:14px;margin-bottom:12px;
+}
+.stats-title{
+font-family:var(--display);font-size:14px;letter-spacing:2px;
+color:var(--gold);text-align:center;margin-bottom:10px;
+text-shadow:0 0 8px rgba(255,215,0,.4);
+}
+.stats-grid{
+display:grid;grid-template-columns:repeat(5,1fr);gap:5px;
+}
+.stat-cell{
+background:rgba(0,0,0,.5);border:1px solid var(--gold-dark);
+border-radius:6px;padding:5px 3px;text-align:center;
+}
+.stat-num{
+font-family:var(--korean-bold);font-size:13px;color:var(--gold);
+}
+.stat-count{
+font-family:var(--pixel);font-size:6px;color:var(--neon-cyan);
+margin-top:2px;
+}
+.stat-cell.hot{background:linear-gradient(180deg,rgba(230,0,18,.3),rgba(139,0,0,.2));border-color:var(--red)}
+.stat-cell.hot .stat-num{color:#FFE066;text-shadow:0 0 4px var(--red)}
+
+.lucky-display{
+display:flex;justify-content:center;gap:6px;margin:14px 0;
+}
+.lucky-ball{
+width:36px;height:36px;border-radius:50%;
+display:flex;align-items:center;justify-content:center;
+font-family:var(--korean-bold);font-size:13px;color:#fff;
+text-shadow:1px 1px 2px rgba(0,0,0,.8);
+box-shadow:inset -3px -3px 6px rgba(0,0,0,.3),inset 3px 3px 5px rgba(255,255,255,.4);
+animation:luckyBounce 2s ease-in-out infinite;
+}
+.lucky-ball:nth-child(2){animation-delay:.2s}
+.lucky-ball:nth-child(3){animation-delay:.4s}
+.lucky-ball:nth-child(4){animation-delay:.6s}
+.lucky-ball:nth-child(5){animation-delay:.8s}
+.lucky-ball:nth-child(6){animation-delay:1s}
+@keyframes luckyBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+
+/* === FX === */
+.confetti{position:fixed;z-index:200;pointer-events:none;animation:cf linear forwards}
+@keyframes cf{0%{transform:translateY(-10vh) rotate(0);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0}}
+.spark{position:fixed;z-index:198;pointer-events:none;width:4px;height:4px;border-radius:50%;background:var(--gold);box-shadow:0 0 8px var(--gold),0 0 16px var(--gold);animation:sparkFly 1.2s ease-out forwards}
+@keyframes sparkFly{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(.2);opacity:0}}
+
+/* Coin drop effect */
+.coin-drop{
+position:absolute;left:50%;top:-20px;
+width:24px;height:24px;border-radius:50%;
+background:radial-gradient(circle at 30% 30%,#fff,var(--gold) 40%,var(--gold-dark) 90%);
+box-shadow:0 0 4px var(--gold);
+font-family:var(--display);font-size:14px;color:var(--red-deep);
+display:flex;align-items:center;justify-content:center;
+animation:coinDrop .6s ease-in forwards;z-index:10;
+transform:translateX(-50%);
+}
+@keyframes coinDrop{0%{top:-20px;opacity:0}30%{opacity:1}100%{top:50%;opacity:0;transform:translateX(-50%) scale(.3)}}
+
+/* Shake */
+.shake{animation:scShake .4s ease-in-out}
+@keyframes scShake{0%,100%{transform:translate(0,0)}20%{transform:translate(-3px,2px)}40%{transform:translate(3px,-2px)}60%{transform:translate(-2px,-2px)}80%{transform:translate(2px,2px)}}
+</style>
+</head>
+<body>
+<div id="app">
+<div class="marquee" id="marquee"></div>
+
+<!-- ========= MAIN GACHA SCREEN ========= -->
+<div class="screen active" id="scMain">
+<div class="topbar">
+<a href="index.html" class="back-btn">◀ HOME</a>
+<div class="tab-bar">
+<button class="tab-btn active" onclick="switchTab('main')">GACHA</button>
+<button class="tab-btn" onclick="switchTab('compare')">비교</button>
+<button class="tab-btn" onclick="switchTab('history')">기록</button>
+<button class="tab-btn" onclick="switchTab('stats')">분석</button>
+</div>
+</div>
+
+<div class="lobby-header">
+<div class="head-frame">
+<div class="head-line1">★ LUCKY ★</div>
+<div class="head-line2">GACHA</div>
+<div class="head-line3">LOTTO MACHINE</div>
+</div>
+</div>
+
+<!-- GAME TYPE TOGGLE -->
+<div class="game-toggle">
+<button class="toggle-btn active" onclick="switchGame('lotto')">
+🎯 로또 6/45
+<span class="toggle-tag">1~45 / 6BALLS</span>
+</button>
+<button class="toggle-btn" onclick="switchGame('pension')">
+💰 연금복권
+<span class="toggle-tag">7DIGITS / 0~9</span>
+</button>
+</div>
+
+<!-- GACHA MACHINE -->
+<div class="gacha-stage">
+<div class="gacha-machine" id="machine">
+
+<div class="machine-body">
+<!-- BANDAI HEADER -->
+<div class="machine-header">
+<div class="bandai-logo">BANDAI</div>
+</div>
+
+<!-- DISPLAY WINDOW -->
+<div class="display-window">
+<!-- POSTER (background advertisement) -->
+<div class="poster">
+<div class="poster-banner">JACKPOT</div>
+<div class="poster-title">LOTTO</div>
+<div class="poster-sub" id="posterSub">행운의 번호 가챠</div>
+<div class="poster-7s">
+<span class="poster-7">7</span>
+<span class="poster-7">7</span>
+<span class="poster-7">7</span>
+</div>
+</div>
+<!-- BALLS (foreground, in front of poster) -->
+<div class="balls-container" id="ballsContainer"></div>
+</div>
+
+<!-- CONTROL PANEL -->
+<div class="control-panel">
+<!-- LEFT: COIN LABEL -->
+<div class="coin-label">
+<div class="coin-label-jp">コイン</div>
+<div class="coin-label-en">COIN</div>
+<div class="coin-label-num">1まい</div>
+</div>
+
+<!-- CENTER: KNOB -->
+<div class="knob-area">
+<div class="knob-track">
+<span class="knob-arrow">↻</span>
+</div>
+<div class="knob-base" onclick="pull()">
+<div class="knob" id="handle">
+<div class="knob-slot"></div>
+</div>
+</div>
+</div>
+
+<!-- RIGHT: COIN SLOT -->
+<div class="coin-slot-panel">
+<div class="coin-slot-label">COIN IN</div>
+<div class="coin-slot-actual"></div>
+</div>
+</div>
+
+<!-- GACHAPON LABEL -->
+<div class="gachapon-label">
+<span class="gachapon-text">ガシャポン GACHAPON</span>
+</div>
+
+<!-- DELIVERY -->
+<div class="delivery-area">
+<div class="delivery-slot">
+<div class="delivery-flap" id="flap">
+<span class="delivery-flap-text">PUSH</span>
+</div>
+<span class="delivery-empty-text">▼ TAKE OUT ▼</span>
+</div>
+</div>
+
+<!-- WARNING STICKER -->
+<div class="warning-label">注意<br>CAUTION</div>
+</div>
+
+</div>
+<div class="spin-hint" id="spinHint">▼ 손잡이를 돌려주세요 ▼</div>
+</div>
+
+<!-- CONTROLS -->
+<div class="spin-controls">
+<div class="set-counter">
+<span class="counter-label">SETS:</span>
+<div class="counter-buttons">
+<button class="counter-btn" onclick="changeSets(-1)">−</button>
+<span class="counter-value" id="setsCount">1</span>
+<button class="counter-btn" onclick="changeSets(1)">+</button>
+</div>
+</div>
+<button class="action-btn" id="spinBtn" onclick="pull()">
+<span class="action-btn-inner">🎰 GACHA START 🎰</span>
+</button>
+</div>
+
+<!-- RESULT TRAY -->
+<div class="result-tray" id="resultTray"></div>
+
+</div>
+
+<!-- ========= COMPARE SCREEN ========= -->
+<div class="screen" id="scCompare">
+<div class="topbar">
+<a href="index.html" class="back-btn">◀ HOME</a>
+<div class="tab-bar">
+<button class="tab-btn" onclick="switchTab('main')">GACHA</button>
+<button class="tab-btn active" onclick="switchTab('compare')">비교</button>
+<button class="tab-btn" onclick="switchTab('history')">기록</button>
+<button class="tab-btn" onclick="switchTab('stats')">분석</button>
+</div>
+</div>
+
+<div class="lobby-header">
+<div class="head-frame">
+<div class="head-line1">★ COMPARE ★</div>
+<div class="head-line2">결과 비교</div>
+<div class="head-line3">CHECK YOUR LUCK</div>
+</div>
+</div>
+
+<div class="compare-section">
+<div class="compare-label" style="margin:8px 0 6px">실제 당첨번호 입력 (쉼표로 구분, 보너스는 마지막)</div>
+<div class="compare-input-row">
+<input class="compare-input" id="winInput" placeholder="예: 5,12,18,23,30,42,7" maxlength="40">
+<button class="compare-btn" onclick="doCompare()">비교</button>
+</div>
+<div id="compareResults"></div>
+</div>
+</div>
+
+<!-- ========= HISTORY SCREEN ========= -->
+<div class="screen" id="scHistory">
+<div class="topbar">
+<a href="index.html" class="back-btn">◀ HOME</a>
+<div class="tab-bar">
+<button class="tab-btn" onclick="switchTab('main')">GACHA</button>
+<button class="tab-btn" onclick="switchTab('compare')">비교</button>
+<button class="tab-btn active" onclick="switchTab('history')">기록</button>
+<button class="tab-btn" onclick="switchTab('stats')">분석</button>
+</div>
+</div>
+
+<div class="lobby-header">
+<div class="head-frame">
+<div class="head-line1">★ HISTORY ★</div>
+<div class="head-line2">기록</div>
+<div class="head-line3">YOUR DRAWS</div>
+</div>
+</div>
+
+<div style="display:flex;justify-content:flex-end;margin-top:14px">
+<button class="sec-btn" style="flex:0;padding:8px 14px" onclick="clearHistory()">🗑️ 전체 삭제</button>
+</div>
+<div class="history-list" id="historyList"></div>
+</div>
+
+<!-- ========= STATS SCREEN ========= -->
+<div class="screen" id="scStats">
+<div class="topbar">
+<a href="index.html" class="back-btn">◀ HOME</a>
+<div class="tab-bar">
+<button class="tab-btn" onclick="switchTab('main')">GACHA</button>
+<button class="tab-btn" onclick="switchTab('compare')">비교</button>
+<button class="tab-btn" onclick="switchTab('history')">기록</button>
+<button class="tab-btn active" onclick="switchTab('stats')">분석</button>
+</div>
+</div>
+
+<div class="lobby-header">
+<div class="head-frame">
+<div class="head-line1">★ ANALYSIS ★</div>
+<div class="head-line2">행운 분석</div>
+<div class="head-line3">LUCKY PATTERNS</div>
+</div>
+</div>
+
+<div id="statsContent"></div>
+</div>
+
+</div>
+
+<script>
+// =================== AUDIO ===================
+const AC=window.AudioContext||window.webkitAudioContext;
+let ax;
+function ea(){if(!ax)ax=new AC();if(ax.state==='suspended')ax.resume()}
+function snd(type,freq,dur,vol=0.07){
+ea();const o=ax.createOscillator(),g=ax.createGain();
+o.type=type;o.frequency.value=freq;
+g.gain.setValueAtTime(vol,ax.currentTime);
+g.gain.exponentialRampToValueAtTime(0.001,ax.currentTime+dur);
+o.connect(g);g.connect(ax.destination);o.start();o.stop(ax.currentTime+dur);
+}
+function sfxClick(){snd('square',800,0.05,0.06)}
+function sfxCoin(){
+ea();
+[1500,2000,2500,1800,1200].forEach((f,i)=>{
+const t=ax.currentTime+i*0.04;
+const o=ax.createOscillator(),g=ax.createGain();
+o.type='sine';o.frequency.value=f;
+g.gain.setValueAtTime(0.06,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.08);
+o.connect(g);g.connect(ax.destination);o.start(t);o.stop(t+0.08);
+});
+}
+function sfxCrank(){
+ea();
+const o=ax.createOscillator(),g=ax.createGain();
+o.type='sawtooth';
+o.frequency.setValueAtTime(80,ax.currentTime);
+o.frequency.linearRampToValueAtTime(120,ax.currentTime+0.5);
+o.frequency.linearRampToValueAtTime(80,ax.currentTime+1);
+g.gain.setValueAtTime(0,ax.currentTime);
+g.gain.linearRampToValueAtTime(0.06,ax.currentTime+0.05);
+g.gain.linearRampToValueAtTime(0.06,ax.currentTime+0.95);
+g.gain.linearRampToValueAtTime(0,ax.currentTime+1.0);
+o.connect(g);g.connect(ax.destination);
+o.start();o.stop(ax.currentTime+1.0);
+}
+function sfxRattle(){
+ea();
+for(let i=0;i<8;i++){
+const t=ax.currentTime+i*0.1;
+const o=ax.createOscillator(),g=ax.createGain();
+o.type='triangle';
+o.frequency.value=200+Math.random()*400;
+g.gain.setValueAtTime(0.04,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.08);
+o.connect(g);g.connect(ax.destination);o.start(t);o.stop(t+0.08);
+}
+}
+function sfxBallDrop(){
+ea();
+const o=ax.createOscillator(),g=ax.createGain();
+o.type='sine';
+o.frequency.setValueAtTime(800,ax.currentTime);
+o.frequency.exponentialRampToValueAtTime(200,ax.currentTime+0.15);
+g.gain.setValueAtTime(0.12,ax.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ax.currentTime+0.15);
+o.connect(g);g.connect(ax.destination);o.start();o.stop(ax.currentTime+0.15);
+}
+function sfxFanfare(){
+ea();
+const melody=[{f:523,d:.12},{f:659,d:.12},{f:784,d:.12},{f:1047,d:.25},{f:784,d:.12},{f:1047,d:.4}];
+let t=ax.currentTime;
+melody.forEach(n=>{
+const o=ax.createOscillator(),g=ax.createGain();
+o.type='square';o.frequency.value=n.f;
+g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.1,t+0.02);
+g.gain.exponentialRampToValueAtTime(0.001,t+n.d);
+o.connect(g);g.connect(ax.destination);o.start(t);o.stop(t+n.d);
+const o2=ax.createOscillator(),g2=ax.createGain();
+o2.type='triangle';o2.frequency.value=n.f*1.5;
+g2.gain.setValueAtTime(0,t);g2.gain.linearRampToValueAtTime(0.05,t+0.02);
+g2.gain.exponentialRampToValueAtTime(0.001,t+n.d);
+o2.connect(g2);g2.connect(ax.destination);o2.start(t);o2.stop(t+n.d);
+t+=n.d;
+});
+}
+
+// =================== MARQUEE ===================
+(function(){
+const m=document.getElementById('marquee');
+function build(){
+m.innerHTML='';
+const W=Math.min(480,window.innerWidth),H=window.innerHeight;
+const sp=20,pts=[];
+for(let x=10;x<W-10;x+=sp)pts.push([x,4]);
+for(let y=10;y<H-10;y+=sp)pts.push([W-6,y]);
+for(let x=W-10;x>10;x-=sp)pts.push([x,H-8]);
+for(let y=H-10;y>10;y-=sp)pts.push([4,y]);
+pts.forEach(p=>{
+const d=document.createElement('div');d.className='bulb';
+d.style.left=p[0]+'px';d.style.top=p[1]+'px';m.appendChild(d);
+});
+}
+build();
+window.addEventListener('resize',build);
+let fr=0;
+setInterval(()=>{
+m.querySelectorAll('.bulb').forEach((d,i)=>d.classList.toggle('off',(i+fr)%3!==0));
+fr++;
+},170);
+})();
+
+// =================== STATE ===================
+let gameType='lotto'; // 'lotto' or 'pension'
+let setsCount=1;
+let spinning=false;
+let history=loadHistory();
+
+function loadHistory(){
+try{
+const h=localStorage.getItem('gacha_history');
+return h?JSON.parse(h):[];
+}catch(e){return []}
+}
+function saveHistory(){
+try{localStorage.setItem('gacha_history',JSON.stringify(history));}catch(e){}
+}
+
+// =================== BALL COLOR FUNCTIONS ===================
+function ballColor(n){
+if(n<=10)return 1;
+if(n<=20)return 2;
+if(n<=30)return 3;
+if(n<=40)return 4;
+return 5;
+}
+
+// =================== DOME BALLS ANIMATION ===================
+const ballsCount=18;
+let ballsState=[];
+let domeAnimRunning=false;
+
+function initDomeBalls(){
+const container=document.getElementById('ballsContainer');
+container.innerHTML='';
+ballsState=[];
+const W=container.offsetWidth||268;
+const H=container.offsetHeight||280;
+
+if(gameType==='lotto'){
+for(let i=0;i<ballsCount;i++){
+const num=Math.floor(Math.random()*45)+1;
+const ball=document.createElement('div');
+ball.className=`ball size-${1+Math.floor(Math.random()*3)} color-${ballColor(num)}`;
+ball.textContent=num;
+container.appendChild(ball);
+ballsState.push({
+el:ball,
+x:30+Math.random()*(W-60),
+y:30+Math.random()*(H-60),
+vx:(Math.random()-.5)*1.5,
+vy:(Math.random()-.5)*1.5,
+size:34
+});
+}
+}else{
+for(let i=0;i<ballsCount;i++){
+const num=Math.floor(Math.random()*10);
+const ball=document.createElement('div');
+ball.className=`ball size-2 color-pension`;
+ball.textContent=num;
+container.appendChild(ball);
+ballsState.push({
+el:ball,
+x:30+Math.random()*(W-60),
+y:30+Math.random()*(H-60),
+vx:(Math.random()-.5)*1.5,
+vy:(Math.random()-.5)*1.5,
+size:38
+});
+}
+}
+
+if(!domeAnimRunning){
+domeAnimRunning=true;
+animateDome();
+}
+}
+
+function animateDome(){
+const container=document.getElementById('ballsContainer');
+if(!container){domeAnimRunning=false;return}
+const W=container.offsetWidth||268;
+const H=container.offsetHeight||280;
+
+ballsState.forEach((b,i)=>{
+// Apply velocity (extra during spin)
+const speedMult=spinning?3:1;
+b.x+=b.vx*speedMult;
+b.y+=b.vy*speedMult;
+// Light gravity
+if(spinning){b.vy+=0.02}else{b.vy+=0.04}
+// Friction
+b.vx*=0.99;b.vy*=0.99;
+
+// Rectangle boundary (display window)
+const r=b.size/2;
+if(b.x<r){b.x=r;b.vx=-b.vx*0.7}
+if(b.x>W-r){b.x=W-r;b.vx=-b.vx*0.7}
+if(b.y<r){b.y=r;b.vy=-b.vy*0.7}
+if(b.y>H-r){b.y=H-r;b.vy=-b.vy*0.7;b.vx*=0.95}
+
+// Ball-ball collision
+for(let j=i+1;j<ballsState.length;j++){
+const b2=ballsState[j];
+const dx=b2.x-b.x,dy=b2.y-b.y;
+const d=Math.sqrt(dx*dx+dy*dy);
+const minD=b.size/2+b2.size/2;
+if(d<minD&&d>0){
+const overlap=(minD-d)/2;
+const nx=dx/d,ny=dy/d;
+b.x-=nx*overlap;b.y-=ny*overlap;
+b2.x+=nx*overlap;b2.y+=ny*overlap;
+const dvx=b2.vx-b.vx,dvy=b2.vy-b.vy;
+const speed=dvx*nx+dvy*ny;
+if(speed<0){
+b.vx+=nx*speed;b.vy+=ny*speed;
+b2.vx-=nx*speed;b2.vy-=ny*speed;
+}
+}
+}
+
+b.el.style.transform=`translate(${b.x-b.size/2}px,${b.y-b.size/2}px)`;
+});
+
+requestAnimationFrame(animateDome);
+}
+
+function shakeDomeBalls(){
+ballsState.forEach(b=>{
+b.vx=(Math.random()-.5)*8;
+b.vy=(Math.random()-.5)*8;
+});
+}
+
+// =================== TABS ===================
+function switchTab(tab){
+sfxClick();
+document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+const screens={main:'scMain',compare:'scCompare',history:'scHistory',stats:'scStats'};
+document.getElementById(screens[tab]).classList.add('active');
+event.target.closest('.tab-btn')?.classList.add('active');
+if(tab==='history')renderHistory();
+if(tab==='stats')renderStats();
+if(tab==='compare')renderCompareView();
+}
+
+// =================== GAME TYPE ===================
+function switchGame(type){
+if(spinning)return;
+sfxClick();
+gameType=type;
+document.querySelectorAll('.toggle-btn').forEach(b=>b.classList.remove('active'));
+event.target.closest('.toggle-btn').classList.add('active');
+const ps=document.getElementById('posterSub');
+if(ps)ps.textContent=type==='lotto'?'행운의 번호 가챠':'연금복권 가챠';
+initDomeBalls();
+document.getElementById('resultTray').innerHTML='';
+}
+
+// =================== SETS COUNTER ===================
+function changeSets(d){
+sfxClick();
+setsCount=Math.max(1,Math.min(5,setsCount+d));
+document.getElementById('setsCount').textContent=setsCount;
+}
+
+// =================== PULL HANDLE ===================
+function pull(){
+if(spinning)return;
+spinning=true;
+ea();sfxCoin();
+
+const handle=document.getElementById('handle');
+const flap=document.getElementById('flap');
+const btn=document.getElementById('spinBtn');
+const tray=document.getElementById('resultTray');
+const machine=document.getElementById('machine');
+
+handle.classList.add('spinning');
+btn.disabled=true;btn.classList.add('spinning');
+tray.innerHTML='';
+document.getElementById('spinHint').style.opacity='0';
+
+setTimeout(sfxCrank,200);
+shakeDomeBalls();
+setTimeout(()=>{shakeDomeBalls();sfxRattle()},400);
+setTimeout(()=>{shakeDomeBalls();sfxRattle()},800);
+
+// Coin drop animation
+const coin=document.createElement('div');
+coin.className='coin-drop';coin.textContent='₩';
+document.querySelector('.control-panel').appendChild(coin);
+setTimeout(()=>coin.remove(),700);
+
+// Generate results
+const results=[];
+for(let i=0;i<setsCount;i++){
+if(gameType==='lotto'){
+results.push(generateLotto());
+}else{
+results.push(generatePension());
+}
+}
+
+// Save to history
+const now=new Date();
+const dateStr=now.toLocaleString('ko-KR',{year:'2-digit',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+results.forEach(r=>{
+history.unshift({type:gameType,numbers:r,date:dateStr,ts:Date.now()});
+});
+if(history.length>100)history.length=100;
+saveHistory();
+
+// After spin animation, drop ball and show results
+setTimeout(()=>{
+handle.classList.remove('spinning');
+machine.classList.add('shake');
+setTimeout(()=>machine.classList.remove('shake'),400);
+
+flap.classList.add('open');
+sfxBallDrop();
+setTimeout(sfxFanfare,300);
+
+setTimeout(()=>{
+flap.classList.remove('open');
+showResults(results);
+spinning=false;
+btn.disabled=false;btn.classList.remove('spinning');
+document.getElementById('spinHint').style.opacity='1';
+mkConfetti(40);
+mkSparks(20);
+},600);
+
+},1400);
+}
+
+// =================== GENERATE NUMBERS ===================
+function generateLotto(){
+const nums=[];
+while(nums.length<6){
+const n=Math.floor(Math.random()*45)+1;
+if(!nums.includes(n))nums.push(n);
+}
+nums.sort((a,b)=>a-b);
+// Add bonus
+const bonus=()=>{
+let b;do{b=Math.floor(Math.random()*45)+1}while(nums.includes(b));return b;
+};
+nums.bonus=bonus();
+return nums;
+}
+
+function generatePension(){
+const group=Math.floor(Math.random()*5)+1; // 1-5조
+const digits=[];
+for(let i=0;i<6;i++)digits.push(Math.floor(Math.random()*10));
+return {group,digits};
+}
+
+// =================== SHOW RESULTS ===================
+function showResults(results){
+const tray=document.getElementById('resultTray');
+results.forEach((r,i)=>{
+const set=document.createElement('div');
+set.className='result-set';
+set.style.animationDelay=(i*0.15)+'s';
+
+if(gameType==='lotto'){
+const ballsHTML=r.map((n,j)=>
+`<div class="result-ball color-${ballColor(n)}" style="animation-delay:${j*0.08}s">${n}</div>`
+).join('');
+const bonusHTML=`<div class="result-ball color-${ballColor(r.bonus)}" style="animation-delay:0.6s;border:2px solid var(--neon-pink)" title="보너스">${r.bonus}</div>`;
+set.innerHTML=`
+<div class="set-header">
+<span class="set-num">SET ${i+1} / ${results.length}</span>
+<span class="set-tag">로또 6/45</span>
+</div>
+<div class="set-balls">${ballsHTML}<span style="color:var(--neon-pink);font-family:var(--pixel);font-size:8px;align-self:center;margin:0 4px">+</span>${bonusHTML}</div>
+<div style="text-align:center;font-family:var(--pixel);font-size:6px;color:var(--neon-cyan);margin-top:6px;letter-spacing:1px">★ BONUS BALL ★</div>
+`;
+}else{
+const digitsHTML=r.digits.map((d,j)=>
+`<div class="pension-ball" style="animation-delay:${j*0.08}s">${d}</div>`
+).join('');
+set.innerHTML=`
+<div class="set-header">
+<span class="set-num">SET ${i+1} / ${results.length}</span>
+<span class="set-tag">연금복권</span>
+</div>
+<div class="pension-set-row">
+<div class="pension-group-label">${r.group}조</div>
+<div class="pension-set">${digitsHTML}</div>
+</div>
+`;
+}
+tray.appendChild(set);
+});
+}
+
+// =================== COMPARE ===================
+function renderCompareView(){
+const cont=document.getElementById('compareResults');
+const lottoHistory=history.filter(h=>h.type==='lotto').slice(0,10);
+if(lottoHistory.length===0){
+cont.innerHTML='<div class="no-compare-msg">📭 비교할 로또 번호가 없어요!<br>먼저 가챠로 번호를 뽑아주세요.</div>';
+}else{
+cont.innerHTML='<div class="compare-label">▼ 위에 당첨번호를 입력하면 자동 비교 ▼</div>';
+}
+}
+
+function doCompare(){
+sfxClick();
+const input=document.getElementById('winInput').value.trim();
+if(!input){alert('당첨번호를 입력해주세요!\n예: 5,12,18,23,30,42,7');return}
+const parts=input.split(/[,\s]+/).map(s=>parseInt(s)).filter(n=>!isNaN(n)&&n>=1&&n<=45);
+if(parts.length<6){alert('숫자 6개 이상 입력해주세요!');return}
+
+const winNums=parts.slice(0,6);
+const bonus=parts[6]; // optional
+
+const lottoHistory=history.filter(h=>h.type==='lotto').slice(0,20);
+const cont=document.getElementById('compareResults');
+
+if(lottoHistory.length===0){
+cont.innerHTML='<div class="no-compare-msg">비교할 로또 기록이 없어요!</div>';
+return;
+}
+
+let html='';
+lottoHistory.forEach((h,idx)=>{
+const matches=h.numbers.filter(n=>winNums.includes(n));
+const matchCount=matches.length;
+const bonusMatch=bonus&&h.numbers.includes(bonus);
+const hasMyBonus=h.numbers.bonus&&winNums.includes(h.numbers.bonus);
+
+let rank='없음',prize='꽝',rankClass='rank-none';
+if(matchCount===6){rank='1등',prize='🎉 약 20억원!',rankClass='rank-1'}
+else if(matchCount===5&&bonusMatch){rank='2등',prize='💰 약 6천만원!',rankClass='rank-2'}
+else if(matchCount===5){rank='3등',prize='💵 약 150만원!',rankClass='rank-3'}
+else if(matchCount===4){rank='4등',prize='5만원',rankClass='rank-4'}
+else if(matchCount===3){rank='5등',prize='5천원',rankClass='rank-5'}
+
+const myBalls=h.numbers.map(n=>{
+const matched=winNums.includes(n);
+return `<div class="result-ball color-${ballColor(n)} ${matched?'matched':''}">${n}</div>`;
+}).join('');
+
+const winBalls=winNums.map(n=>`<div class="result-ball color-${ballColor(n)}">${n}</div>`).join('')
++ (bonus?`<span style="color:var(--neon-pink);font-family:var(--pixel);font-size:8px;align-self:center;margin:0 4px">+</span><div class="result-ball color-${ballColor(bonus)}" style="border:2px solid var(--neon-pink)">${bonus}</div>`:'');
+
+html+=`
+<div class="compare-result-card">
+<div class="compare-rank ${rankClass}">${rank==='1등'?'🏆 ':''}${rank}</div>
+<div class="compare-prize">${prize}</div>
+<div class="compare-label">내 번호 (${h.date})</div>
+<div class="compare-balls-row">${myBalls}</div>
+<div class="compare-label">당첨 번호</div>
+<div class="compare-balls-row">${winBalls}</div>
+<div style="text-align:center;font-family:var(--pixel);font-size:8px;color:var(--gold);margin-top:8px;letter-spacing:1px">
+${matchCount}개 일치${bonusMatch?' + 보너스':''}
+</div>
+</div>
+`;
+});
+
+cont.innerHTML=html;
+mkSparks(15);
+}
+
+// =================== HISTORY ===================
+function renderHistory(){
+const list=document.getElementById('historyList');
+if(history.length===0){
+list.innerHTML='<div class="history-empty">📭 아직 뽑은 번호가 없어요!<br>가챠 머신을 돌려보세요.</div>';
+return;
+}
+list.innerHTML=history.map((h,i)=>{
+let ballsHTML;
+if(h.type==='lotto'){
+ballsHTML=h.numbers.map(n=>
+`<div class="history-ball" style="background:radial-gradient(circle at 30% 30%,${getColorStr(ballColor(n))})">${n}</div>`
+).join('');
+if(h.numbers.bonus){
+ballsHTML+=`<span style="color:var(--neon-pink);align-self:center;margin:0 2px;font-size:11px">+</span>`;
+ballsHTML+=`<div class="history-ball" style="background:radial-gradient(circle at 30% 30%,${getColorStr(ballColor(h.numbers.bonus))});border:1.5px solid var(--neon-pink)">${h.numbers.bonus}</div>`;
+}
+}else{
+ballsHTML=`<span style="color:var(--gold);font-family:var(--pixel);font-size:8px;align-self:center;margin-right:6px">${h.numbers.group}조</span>`;
+ballsHTML+=h.numbers.digits.map(d=>
+`<div class="history-ball" style="background:linear-gradient(180deg,#FFE066,#FFA500,#cc6600)">${d}</div>`
+).join('');
+}
+return `
+<div class="history-item">
+<div class="history-date">
+${h.date} · ${h.type==='lotto'?'로또 6/45':'연금복권'}
+<button class="delete-btn" onclick="deleteHistory(${i})">✕</button>
+</div>
+<div class="history-balls">${ballsHTML}</div>
+</div>
+`;
+}).join('');
+}
+
+function deleteHistory(i){
+if(!confirm('이 기록을 삭제할까요?'))return;
+history.splice(i,1);saveHistory();renderHistory();
+}
+
+function clearHistory(){
+if(!confirm('모든 기록을 삭제할까요?'))return;
+history=[];saveHistory();renderHistory();
+}
+
+function getColorStr(c){
+const map={
+1:'#FFE066,#FBC400,#A88200',
+2:'#A0DFFA,#69C8F2,#3a92c7',
+3:'#FFA0A0,#FF7272,#c74040',
+4:'#D0D0D0,#888,#555',
+5:'#D5F080,#B0D840,#7a9a20'
+};
+return map[c]||map[1];
+}
+
+// =================== STATS ===================
+function renderStats(){
+const cont=document.getElementById('statsContent');
+const lottoHistory=history.filter(h=>h.type==='lotto');
+
+if(lottoHistory.length===0){
+cont.innerHTML='<div class="history-empty">📊 분석할 데이터가 없어요!<br>로또 가챠를 뽑아주세요.</div>';
+return;
+}
+
+// Count number frequency
+const freq={};
+for(let i=1;i<=45;i++)freq[i]=0;
+lottoHistory.forEach(h=>{
+h.numbers.forEach(n=>freq[n]++);
+});
+
+// Sort by freq
+const sorted=Object.entries(freq).sort((a,b)=>b[1]-a[1]);
+const totalNums=lottoHistory.length*6;
+
+// Lucky numbers (top 6)
+const lucky=sorted.slice(0,6).filter(e=>e[1]>0).map(e=>parseInt(e[0]));
+const cold=sorted.slice().reverse().slice(0,6).map(e=>parseInt(e[0]));
+
+let html=`
+<div class="stats-card">
+<div class="stats-title">🍀 행운의 번호 TOP 6</div>
+<div class="lucky-display">
+${lucky.length>0?lucky.map(n=>`<div class="lucky-ball" style="background:radial-gradient(circle at 30% 30%,${getColorStr(ballColor(n))})">${n}</div>`).join(''):'<div style="color:#888;font-size:12px">데이터가 부족해요</div>'}
+</div>
+<div style="text-align:center;font-family:var(--pixel);font-size:7px;color:var(--neon-cyan);letter-spacing:1px">
+TOTAL ${lottoHistory.length} DRAWS
+</div>
+</div>
+
+<div class="stats-card">
+<div class="stats-title">📊 번호별 출현 빈도</div>
+<div class="stats-grid">
+`;
+
+const maxFreq=Math.max(...Object.values(freq));
+for(let i=1;i<=45;i++){
+const count=freq[i];
+const isHot=count===maxFreq&&count>0;
+html+=`
+<div class="stat-cell ${isHot?'hot':''}">
+<div class="stat-num">${i}</div>
+<div class="stat-count">${count}</div>
+</div>
+`;
+}
+html+=`</div></div>`;
+
+// Pattern analysis
+if(lottoHistory.length>=3){
+const sums=lottoHistory.map(h=>h.numbers.reduce((a,b)=>a+b,0));
+const avgSum=Math.round(sums.reduce((a,b)=>a+b,0)/sums.length);
+const evens=lottoHistory.map(h=>h.numbers.filter(n=>n%2===0).length);
+const avgEven=(evens.reduce((a,b)=>a+b,0)/evens.length).toFixed(1);
+
+html+=`
+<div class="stats-card">
+<div class="stats-title">🎯 패턴 분석</div>
+<div style="display:flex;justify-content:space-around;text-align:center;padding:8px 0">
+<div>
+<div style="font-family:var(--korean-bold);font-size:22px;color:var(--gold);text-shadow:0 0 6px var(--gold)">${avgSum}</div>
+<div style="font-family:var(--pixel);font-size:6px;color:var(--neon-cyan);margin-top:4px;letter-spacing:1px">평균 합계</div>
+</div>
+<div>
+<div style="font-family:var(--korean-bold);font-size:22px;color:var(--gold);text-shadow:0 0 6px var(--gold)">${avgEven}</div>
+<div style="font-family:var(--pixel);font-size:6px;color:var(--neon-cyan);margin-top:4px;letter-spacing:1px">평균 짝수개</div>
+</div>
+<div>
+<div style="font-family:var(--korean-bold);font-size:22px;color:var(--gold);text-shadow:0 0 6px var(--gold)">${(6-avgEven).toFixed(1)}</div>
+<div style="font-family:var(--pixel);font-size:6px;color:var(--neon-cyan);margin-top:4px;letter-spacing:1px">평균 홀수개</div>
+</div>
+</div>
+</div>
+`;
+}
+
+cont.innerHTML=html;
+}
+
+// =================== EFFECTS ===================
+function mkConfetti(n){
+const cols=['#FFD700','#FF1493','#00FFFF','#39FF14','#BF00FF','#FF0000','#FFA500'];
+for(let i=0;i<n;i++){
+const e=document.createElement('div');e.className='confetti';
+const sz=Math.random()*7+3;
+e.style.cssText=`left:${Math.random()*100}%;width:${sz}px;height:${sz*1.5}px;background:${cols[i%cols.length]};animation-duration:${Math.random()*2+1.5}s;animation-delay:${Math.random()*0.4}s`;
+document.body.appendChild(e);setTimeout(()=>e.remove(),4000);
+}
+}
+function mkSparks(n){
+const cx=window.innerWidth/2,cy=window.innerHeight/2;
+for(let i=0;i<n;i++){
+const e=document.createElement('div');e.className='spark';
+const ang=Math.random()*Math.PI*2;const dist=Math.random()*150+80;
+e.style.left=cx+'px';e.style.top=cy+'px';
+e.style.setProperty('--dx',Math.cos(ang)*dist+'px');e.style.setProperty('--dy',Math.sin(ang)*dist+'px');
+document.body.appendChild(e);setTimeout(()=>e.remove(),1300);
+}
+}
+
+// =================== SERVICE WORKER ===================
+if('serviceWorker' in navigator){
+window.addEventListener('load',()=>{
+navigator.serviceWorker.register('sw.js').catch(()=>{});
+});
+}
+
+// INIT
+window.addEventListener('load',()=>{
+setTimeout(initDomeBalls,100);
+});
+</script>
+</body>
+</html>

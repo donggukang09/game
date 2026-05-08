@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>🎰 동구의 게임 카지노</title>
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GAME CASINO">
+<meta name="theme-color" content="#0a0508">
+
+<link rel="manifest" href='data:application/manifest+json,{"name":"Donggu Game Casino","short_name":"CASINO","start_url":".","display":"standalone","orientation":"portrait","background_color":"%230a0508","theme_color":"%230a0508","icons":[{"src":"data:image/svg%2Bxml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 192 192%22><rect width=%22192%22 height=%22192%22 fill=%22%23E60012%22 rx=%2232%22/><text x=%2296%22 y=%22130%22 font-size=%22120%22 text-anchor=%22middle%22 fill=%22%23FFD700%22 font-family=%22Impact%22 font-weight=%22900%22>♠</text></svg>","sizes":"192x192","type":"image/svg+xml"},{"src":"data:image/svg%2Bxml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 512 512%22><rect width=%22512%22 height=%22512%22 fill=%22%23E60012%22 rx=%2280%22/><text x=%22256%22 y=%22360%22 font-size=%22320%22 text-anchor=%22middle%22 fill=%22%23FFD700%22 font-family=%22Impact%22 font-weight=%22900%22>♠</text></svg>","sizes":"512x512","type":"image/svg+xml"}]}'>
+
+<link rel="apple-touch-icon" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180"><rect width="180" height="180" fill="%23E60012" rx="30"/><text x="90" y="125" font-size="115" text-anchor="middle" fill="%23FFD700" font-family="Impact" font-weight="900">♠</text></svg>'>
+<link rel="icon" type="image/svg+xml" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="%23E60012" rx="10"/><text x="32" y="46" font-size="42" text-anchor="middle" fill="%23FFD700" font-family="Impact" font-weight="900">♠</text></svg>'>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Bungee&family=Bungee+Shade&family=Black+Han+Sans&family=Jua&display=swap" rel="stylesheet">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+--gold:#FFD700;--gold2:#FFA500;--gold-dark:#8B6914;--gold-deep:#5C4A0F;
+--red:#E60012;--red-deep:#8B0000;--red-dark:#4A0000;
+--cream:#FFF8DC;--ivory:#FFFAF0;
+--neon-pink:#FF10F0;--neon-cyan:#00FFFF;--neon-green:#39FF14;--neon-purple:#BF00FF;
+--velvet:#1a0511;--bg:#0a0508;
+--green-felt:#0a3d0a;--green-felt-dark:#062006;
+--pixel:'Press Start 2P','Courier New',monospace;
+--retro:'VT323','Courier New',monospace;
+--display:'Bungee',Impact,sans-serif;
+--display-shade:'Bungee Shade',Impact,sans-serif;
+--korean-bold:'Black Han Sans','Jua','Malgun Gothic',sans-serif;
+--korean:'Jua','Malgun Gothic','맑은 고딕',sans-serif;
+}
+html,body{height:100%;-webkit-text-size-adjust:100%;background:#000}
+body{
+font-family:var(--korean);
+color:var(--cream);
+display:flex;justify-content:center;
+background:radial-gradient(ellipse at center,#1a0511 0%,#000 100%);
+overscroll-behavior:none;
+min-height:100vh;
+}
+
+#app{
+width:100%;max-width:480px;min-height:100vh;min-height:100dvh;
+position:relative;overflow-x:hidden;
+background:
+radial-gradient(ellipse at top,#2a0820 0%,transparent 50%),
+radial-gradient(ellipse at bottom,#3d1a0a 0%,transparent 60%),
+linear-gradient(180deg,#0d0205 0%,#1a0511 50%,#0d0205 100%);
+}
+
+#app::before{
+content:'';position:absolute;inset:0;pointer-events:none;z-index:0;opacity:.06;
+background-image:
+repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,255,255,.5) 2px,rgba(255,255,255,.5) 3px),
+repeating-linear-gradient(90deg,transparent,transparent 2px,rgba(255,255,255,.3) 2px,rgba(255,255,255,.3) 3px);
+mix-blend-mode:overlay;
+}
+
+/* MARQUEE LIGHTS BORDER */
+.marquee{
+position:fixed;top:0;left:50%;transform:translateX(-50%);
+width:100%;max-width:480px;height:100vh;height:100dvh;
+pointer-events:none;z-index:1;
+}
+.bulb{
+position:absolute;width:8px;height:8px;border-radius:50%;
+background:radial-gradient(circle at 30% 30%,#fff,var(--gold) 40%,var(--gold-dark) 90%);
+box-shadow:0 0 6px var(--gold),0 0 10px rgba(255,215,0,.5);
+transition:all .12s;
+}
+.bulb.off{
+background:radial-gradient(circle at 30% 30%,#3d2807,#1a0f00);
+box-shadow:none;
+}
+
+/* CONTENT */
+.content{
+position:relative;z-index:3;padding:24px 18px 30px;
+min-height:100vh;min-height:100dvh;
+display:flex;flex-direction:column;
+}
+
+/* === HEADER LOGO === */
+.lobby-header{
+text-align:center;margin-top:30px;
+display:flex;flex-direction:column;align-items:center;
+}
+.suit-row{
+display:flex;justify-content:center;gap:14px;margin-bottom:14px;
+}
+.suit{
+font-size:24px;
+animation:suitFloat 3s ease-in-out infinite;
+filter:drop-shadow(0 0 8px currentColor);
+}
+.suit.s1{color:var(--gold);animation-delay:0s}
+.suit.s2{color:var(--red);animation-delay:.5s}
+.suit.s3{color:var(--gold);animation-delay:1s}
+.suit.s4{color:var(--red);animation-delay:1.5s}
+@keyframes suitFloat{
+0%,100%{transform:translateY(0) rotate(-5deg)}
+50%{transform:translateY(-6px) rotate(5deg)}
+}
+
+.lobby-frame{
+position:relative;padding:20px 32px;
+border:3px solid var(--gold);border-radius:18px;
+background:repeating-linear-gradient(45deg,#2a0820,#2a0820 4px,#1a0511 4px,#1a0511 8px);
+box-shadow:
+0 0 0 2px var(--red),
+0 0 0 5px var(--gold),
+0 0 30px rgba(255,215,0,.5),
+inset 0 0 20px rgba(0,0,0,.7);
+}
+.lobby-frame::before,.lobby-frame::after{
+content:'';position:absolute;width:24px;height:24px;
+background:radial-gradient(circle at 30% 30%,#fff,var(--gold) 40%,var(--gold-dark) 90%);
+border-radius:50%;
+box-shadow:0 0 10px var(--gold),inset 0 0 4px rgba(0,0,0,.4);
+top:-12px;
+}
+.lobby-frame::before{left:-12px}
+.lobby-frame::after{right:-12px}
+
+.lobby-line1{
+font-family:var(--display-shade);font-size:24px;letter-spacing:3px;
+color:var(--gold);text-shadow:0 0 10px rgba(255,215,0,.6);line-height:1;
+}
+.lobby-line2{
+font-family:var(--display);font-size:48px;letter-spacing:5px;
+color:var(--red);
+text-shadow:
+2px 2px 0 var(--gold),
+4px 4px 0 var(--red-deep),
+0 0 20px rgba(230,0,18,.6);
+line-height:.95;margin-top:6px;
+}
+.lobby-line3{
+font-family:var(--pixel);font-size:8px;letter-spacing:3px;
+color:var(--neon-cyan);text-shadow:0 0 8px var(--neon-cyan);
+margin-top:10px;
+}
+.welcome-tag{
+margin-top:18px;
+font-family:var(--korean-bold);font-size:13px;letter-spacing:2px;
+color:var(--gold);
+text-shadow:1px 1px 0 var(--red-dark),0 0 10px rgba(255,215,0,.4);
+display:flex;align-items:center;gap:8px;
+}
+.welcome-tag::before,.welcome-tag::after{
+content:'★';color:var(--neon-pink);font-size:10px;
+text-shadow:0 0 6px var(--neon-pink);
+animation:starBlink 1s infinite alternate;
+}
+@keyframes starBlink{0%{opacity:.4}100%{opacity:1}}
+
+/* === SECTION TITLE === */
+.section-title{
+margin:36px 0 18px;text-align:center;position:relative;
+font-family:var(--display);font-size:18px;letter-spacing:3px;
+color:var(--gold);
+text-shadow:1px 1px 0 var(--red-dark),0 0 8px rgba(255,215,0,.4);
+}
+.section-title::before,.section-title::after{
+content:'';position:absolute;top:50%;width:30px;height:2px;
+background:linear-gradient(90deg,transparent,var(--gold-dark),var(--gold),var(--gold-dark),transparent);
+}
+.section-title::before{right:calc(50% + 90px)}
+.section-title::after{left:calc(50% + 90px)}
+
+/* === GAME CARDS === */
+.games-grid{
+display:flex;flex-direction:column;gap:18px;
+}
+
+.game-card{
+position:relative;cursor:pointer;
+background:linear-gradient(135deg,#2a0820 0%,#1a0511 50%,#2a0820 100%);
+border:3px solid var(--gold);border-radius:16px;
+overflow:hidden;text-decoration:none;color:inherit;
+box-shadow:
+inset 0 1px 0 rgba(255,215,0,.3),
+0 4px 0 var(--red-dark),
+0 8px 20px rgba(0,0,0,.7);
+transition:all .2s;
+-webkit-tap-highlight-color:transparent;
+display:block;
+}
+.game-card:active{
+transform:translateY(3px);
+box-shadow:inset 0 1px 0 rgba(255,215,0,.3),0 1px 0 var(--red-dark),0 3px 8px rgba(0,0,0,.6);
+}
+/* Casino chip pattern in corner */
+.game-card::before{
+content:'';position:absolute;top:-30px;right:-30px;width:90px;height:90px;
+border-radius:50%;
+background:repeating-conic-gradient(var(--red) 0 30deg,var(--ivory) 30deg 60deg);
+opacity:.08;z-index:0;
+}
+
+.card-banner{
+position:relative;
+background:linear-gradient(180deg,var(--red) 0%,var(--red-deep) 100%);
+border-bottom:3px solid var(--gold);
+padding:8px 14px;
+display:flex;align-items:center;justify-content:space-between;
+box-shadow:inset 0 -3px 6px rgba(0,0,0,.4);
+}
+.card-banner-stars{
+display:flex;gap:5px;
+}
+.card-banner-star{
+font-size:9px;color:var(--gold);
+text-shadow:0 0 4px var(--gold);
+}
+.card-banner-tag{
+font-family:var(--pixel);font-size:7px;letter-spacing:2px;
+color:var(--gold);
+}
+.card-banner-tag.coming{color:#999}
+
+.card-body{
+display:flex;align-items:center;gap:16px;
+padding:18px 18px;position:relative;z-index:1;
+}
+.card-icon-box{
+width:70px;height:70px;border-radius:14px;flex-shrink:0;
+background:radial-gradient(circle at 30% 30%,var(--gold) 0%,var(--gold-dark) 70%,var(--gold-deep) 100%);
+display:flex;align-items:center;justify-content:center;
+font-size:36px;
+box-shadow:
+inset 0 0 10px rgba(0,0,0,.4),
+0 4px 10px rgba(0,0,0,.5),
+0 0 0 3px var(--red-deep),
+0 0 0 5px var(--gold);
+border:2px solid var(--gold);
+position:relative;
+}
+.card-icon-box::after{
+content:'';position:absolute;inset:6px;border-radius:50%;
+border:2px dashed var(--red-deep);
+opacity:.4;
+}
+
+.card-text{flex:1;min-width:0}
+.card-title{
+font-family:var(--display);font-size:20px;letter-spacing:2px;
+color:var(--gold);
+text-shadow:1px 1px 0 var(--red-dark),0 0 8px rgba(255,215,0,.3);
+line-height:1.1;
+}
+.card-subtitle{
+font-family:var(--korean-bold);font-size:14px;
+color:var(--ivory);margin-top:4px;
+text-shadow:1px 1px 0 rgba(0,0,0,.5);
+}
+.card-desc{
+font-family:var(--korean);font-size:12px;
+color:rgba(255,248,220,.6);margin-top:5px;line-height:1.3;
+}
+
+.card-footer{
+background:linear-gradient(180deg,#1a0a05 0%,#0a0505 100%);
+border-top:1px solid rgba(255,215,0,.2);
+padding:8px 14px;
+display:flex;justify-content:space-between;align-items:center;
+}
+.card-meta{
+font-family:var(--pixel);font-size:6px;letter-spacing:1.5px;
+color:var(--neon-cyan);
+text-shadow:0 0 4px var(--neon-cyan);
+}
+.card-play-btn{
+font-family:var(--display);font-size:11px;letter-spacing:2px;
+color:var(--gold);
+display:flex;align-items:center;gap:6px;
+}
+.card-play-btn::after{
+content:'▶';font-size:9px;color:var(--red);
+text-shadow:0 0 6px var(--red);
+}
+
+/* COMING SOON */
+.game-card.coming-soon{
+opacity:.6;cursor:not-allowed;
+border-color:var(--gold-dark);
+}
+.game-card.coming-soon:active{transform:none;box-shadow:inset 0 1px 0 rgba(255,215,0,.3),0 4px 0 var(--red-dark),0 8px 20px rgba(0,0,0,.7)}
+.game-card.coming-soon .card-banner{background:linear-gradient(180deg,#444 0%,#222 100%)}
+.game-card.coming-soon .card-icon-box{
+background:radial-gradient(circle at 30% 30%,#666 0%,#333 70%,#111 100%);
+box-shadow:inset 0 0 10px rgba(0,0,0,.5),0 4px 10px rgba(0,0,0,.5),0 0 0 3px #222,0 0 0 5px #555;
+}
+.game-card.coming-soon .card-title{color:#999}
+.coming-overlay{
+position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:2;
+background:rgba(0,0,0,.55);
+}
+.coming-text{
+font-family:var(--display-shade);font-size:24px;letter-spacing:3px;
+color:#fff;
+text-shadow:2px 2px 0 #000,0 0 12px rgba(255,16,240,.6);
+transform:rotate(-8deg);
+border:3px dashed var(--neon-pink);
+padding:8px 18px;border-radius:8px;
+background:rgba(0,0,0,.4);
+}
+
+/* === FOOTER === */
+.lobby-footer{
+margin-top:36px;text-align:center;
+display:flex;flex-direction:column;align-items:center;gap:10px;
+padding:14px 0 16px;
+}
+.footer-divider{
+width:60%;height:1px;
+background:linear-gradient(90deg,transparent,var(--gold-dark),var(--gold),var(--gold-dark),transparent);
+margin-bottom:6px;
+}
+.footer-text{
+font-family:var(--pixel);font-size:7px;letter-spacing:3px;
+color:rgba(255,215,0,.5);
+}
+.footer-credits{
+font-family:var(--korean);font-size:11px;
+color:rgba(255,248,220,.4);margin-top:2px;
+}
+
+/* INSTALL BANNER */
+.install-banner{
+position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+width:90%;max-width:420px;
+background:linear-gradient(135deg,var(--gold) 0%,var(--gold2) 100%);
+color:var(--red-deep);padding:12px 16px;border-radius:14px;
+display:none;align-items:center;gap:12px;z-index:300;
+box-shadow:0 8px 30px rgba(255,215,0,.5);
+font-family:var(--korean-bold);font-size:13px;
+border:2px solid var(--red-deep);
+animation:slideUp .4s ease-out;
+}
+.install-banner.show{display:flex}
+@keyframes slideUp{from{transform:translate(-50%,100px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
+.install-banner button{
+margin-left:auto;background:var(--red-deep);color:var(--gold);
+border:none;padding:8px 14px;border-radius:8px;
+font-family:var(--display);font-size:13px;cursor:pointer;letter-spacing:1px;
+}
+.install-banner .close-x{
+background:none;color:var(--red-deep);padding:4px 8px;font-size:18px;
+margin-left:0;
+}
+
+/* Sparkle bg fx */
+.sparkle{
+position:fixed;pointer-events:none;z-index:2;
+font-size:10px;color:var(--gold);
+opacity:0;
+animation:sparkleAnim 3s ease-in-out infinite;
+}
+@keyframes sparkleAnim{
+0%,100%{opacity:0;transform:scale(.5) rotate(0)}
+50%{opacity:.8;transform:scale(1) rotate(180deg)}
+}
+</style>
+</head>
+<body>
+<div id="app">
+<div class="marquee" id="marquee"></div>
+
+<!-- INSTALL BANNER -->
+<div class="install-banner" id="installBanner">
+<span>📱 카지노 앱처럼 설치하기</span>
+<button id="installBtn">설치</button>
+<button class="close-x" onclick="hideInstallBanner()">✕</button>
+</div>
+
+<div class="content">
+<!-- HEADER -->
+<div class="lobby-header">
+<div class="suit-row">
+<span class="suit s1">♠</span>
+<span class="suit s2">♥</span>
+<span class="suit s3">♣</span>
+<span class="suit s4">♦</span>
+</div>
+<div class="lobby-frame">
+<div class="lobby-line1">★ DONGGU'S ★</div>
+<div class="lobby-line2">CASINO</div>
+<div class="lobby-line3">GAME LOBBY</div>
+</div>
+<div class="welcome-tag">WELCOME, HIGH ROLLER</div>
+</div>
+
+<!-- GAMES SECTION -->
+<div class="section-title">GAMES</div>
+
+<div class="games-grid">
+
+<!-- VEGAS SLOT -->
+<a href="vegas-slot/" class="game-card">
+<div class="card-banner">
+<div class="card-banner-stars">
+<span class="card-banner-star">★</span>
+<span class="card-banner-star">★</span>
+<span class="card-banner-star">★</span>
+</div>
+<span class="card-banner-tag">▶ NOW PLAYING</span>
+<div class="card-banner-stars">
+<span class="card-banner-star">★</span>
+<span class="card-banner-star">★</span>
+<span class="card-banner-star">★</span>
+</div>
+</div>
+<div class="card-body">
+<div class="card-icon-box">🎰</div>
+<div class="card-text">
+<div class="card-title">VEGAS SLOT</div>
+<div class="card-subtitle">메뉴 슬롯머신</div>
+<div class="card-desc">레버를 당겨 오늘의 메뉴를 결정하자! 잭팟이 터지면 확정!</div>
+</div>
+</div>
+<div class="card-footer">
+<span class="card-meta">SLOT MACHINE · 1P</span>
+<span class="card-play-btn">PLAY</span>
+</div>
+</a>
+
+<!-- COMING SOON 1 -->
+<div class="game-card coming-soon">
+<div class="coming-overlay">
+<div class="coming-text">COMING SOON</div>
+</div>
+<div class="card-banner">
+<div class="card-banner-stars">
+<span class="card-banner-star">★</span>
+<span class="card-banner-star">★</span>
+</div>
+<span class="card-banner-tag coming">PREPARING</span>
+<div class="card-banner-stars">
+<span class="card-banner-star">★</span>
+<span class="card-banner-star">★</span>
+</div>
+</div>
+<div class="card-body">
+<div class="card-icon-box">🎲</div>
+<div class="card-text">
+<div class="card-title">DICE ROLL</div>
+<div class="card-subtitle">주사위 게임</div>
+<div class="card-desc">곧 출시될 주사위 기반 결정 게임!</div>
+</div>
+</div>
+<div class="card-footer">
+<span class="card-meta">DICE · 1-4P</span>
+<span class="card-play-btn" style="opacity:.4">SOON</span>
+</div>
+</div>
+
+<!-- COMING SOON 2 -->
+<div class="game-card coming-soon">
+<div class="coming-overlay">
+<div class="coming-text">COMING SOON</div>
+</div>
+<div class="card-banner">
+<div class="card-banner-stars">
+<span class="card-banner-star">★</span>
+<span class="card-banner-star">★</span>
+</div>
+<span class="card-banner-tag coming">PREPARING</span>
+<div class="card-banner-stars">
+<span class="card-banner-star">★</span>
+<span class="card-banner-star">★</span>
+</div>
+</div>
+<div class="card-body">
+<div class="card-icon-box">🃏</div>
+<div class="card-text">
+<div class="card-title">CARD DRAW</div>
+<div class="card-subtitle">카드 뽑기</div>
+<div class="card-desc">52장의 카드 중 운명의 카드를 뽑자!</div>
+</div>
+</div>
+<div class="card-footer">
+<span class="card-meta">CARDS · 1P</span>
+<span class="card-play-btn" style="opacity:.4">SOON</span>
+</div>
+</div>
+
+<!-- COMING SOON 3 -->
+<div class="game-card coming-soon">
+<div class="coming-overlay">
+<div class="coming-text">COMING SOON</div>
+</div>
+<div class="card-banner">
+<div class="card-banner-stars">
+<span class="card-banner-star">★</span>
+<span class="card-banner-star">★</span>
+</div>
+<span class="card-banner-tag coming">PREPARING</span>
+<div class="card-banner-stars">
+<span class="card-banner-star">★</span>
+<span class="card-banner-star">★</span>
+</div>
+</div>
+<div class="card-body">
+<div class="card-icon-box">🎯</div>
+<div class="card-text">
+<div class="card-title">DART ROULETTE</div>
+<div class="card-subtitle">다트 룰렛</div>
+<div class="card-desc">다트를 던져 운명을 정해보자!</div>
+</div>
+</div>
+<div class="card-footer">
+<span class="card-meta">DART · 1P</span>
+<span class="card-play-btn" style="opacity:.4">SOON</span>
+</div>
+</div>
+
+</div>
+
+<!-- FOOTER -->
+<div class="lobby-footer">
+<div class="footer-divider"></div>
+<div class="footer-text">★ EST 2026 · DONGGU KANG ★</div>
+<div class="footer-credits">DEVELOPED BY DONGGU KANG</div>
+</div>
+</div>
+</div>
+
+<script>
+// ====== PWA INSTALL ======
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{
+e.preventDefault();
+deferredPrompt=e;
+const banner=document.getElementById('installBanner');
+if(!localStorage.getItem('lobbyInstallDismissed'))banner.classList.add('show');
+});
+document.getElementById('installBtn').addEventListener('click',async()=>{
+if(!deferredPrompt)return;
+deferredPrompt.prompt();
+const{outcome}=await deferredPrompt.userChoice;
+deferredPrompt=null;
+hideInstallBanner();
+});
+function hideInstallBanner(){
+document.getElementById('installBanner').classList.remove('show');
+localStorage.setItem('lobbyInstallDismissed','1');
+}
+if(/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.navigator.standalone && !localStorage.getItem('lobbyInstallDismissed')){
+setTimeout(()=>{
+const banner=document.getElementById('installBanner');
+banner.querySelector('span').textContent='📱 공유 → "홈 화면에 추가"';
+banner.querySelector('button').style.display='none';
+banner.classList.add('show');
+},2500);
+}
+
+// ====== MARQUEE ======
+(function(){
+const m=document.getElementById('marquee');
+function build(){
+m.innerHTML='';
+const W=Math.min(480,window.innerWidth),H=window.innerHeight;
+const sp=18,pts=[];
+for(let x=10;x<W-10;x+=sp)pts.push([x,4]);
+for(let y=10;y<H-10;y+=sp)pts.push([W-6,y]);
+for(let x=W-10;x>10;x-=sp)pts.push([x,H-8]);
+for(let y=H-10;y>10;y-=sp)pts.push([4,y]);
+pts.forEach(p=>{
+const d=document.createElement('div');d.className='bulb';
+d.style.left=p[0]+'px';d.style.top=p[1]+'px';m.appendChild(d);
+});
+}
+build();
+window.addEventListener('resize',build);
+let fr=0;
+setInterval(()=>{
+m.querySelectorAll('.bulb').forEach((d,i)=>d.classList.toggle('off',(i+fr)%3!==0));
+fr++;
+},170);
+})();
+
+// SPARKLES
+(function(){
+const symbols=['✦','✧','★','◆','♦'];
+function spawn(){
+const s=document.createElement('div');
+s.className='sparkle';
+s.textContent=symbols[Math.floor(Math.random()*symbols.length)];
+s.style.left=Math.random()*100+'%';
+s.style.top=Math.random()*100+'%';
+s.style.animationDelay=Math.random()*1+'s';
+s.style.color=Math.random()<.5?'#FFD700':'#FF10F0';
+document.body.appendChild(s);
+setTimeout(()=>s.remove(),3000);
+}
+setInterval(spawn,400);
+})();
+</script>
+</body>
+</html>

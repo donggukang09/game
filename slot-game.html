@@ -853,10 +853,15 @@ trans('scInput','scSlot');
 function initReels(){
 for(let r=0;r<3;r++){
 const st=document.getElementById('s'+r);st.innerHTML='';
-const li=[];
-for(let rep=0;rep<25;rep++)items.forEach(x=>li.push(x));
-for(let i=li.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[li[i],li[j]]=[li[j],li[i]]}
-li.forEach(x=>{const d=document.createElement('div');d.className='reel-item';d.textContent=x;st.appendChild(d)});
+// NO SHUFFLE - items in strict order, repeated 30 times
+// translateY(-(idx*IH)) shows items[idx % items.length] exactly
+for(let rep=0;rep<30;rep++){
+items.forEach(x=>{
+const d=document.createElement('div');
+d.className='reel-item';d.textContent=x;
+st.appendChild(d);
+});
+}
 st.style.transform='translateY(0)';
 document.getElementById('r'+r).classList.remove('win');
 document.getElementById('pl'+r).classList.remove('show-win');
@@ -910,6 +915,9 @@ btn.disabled=true;btn.classList.add('spinning');
 document.getElementById('res').innerHTML='';
 updateDisplay('SPIN..','red');
 
+// Reset reels (regenerate with shuffled items, position at 0)
+initReels();
+
 // SPINNING EFFECTS ON
 document.getElementById('spinRing').classList.add('active');
 document.getElementById('spinFlash').classList.add('active');
@@ -929,33 +937,57 @@ const isJackpot=reelResults[0]===reelResults[1]&&reelResults[1]===reelResults[2]
 
 startSpinMusic();
 
-const durs=[1800,2600,3500];
+// Slot machine easing:
+// Phase 1 (0~8%): 빠른 가속
+// Phase 2 (8~65%): 빠른 크루즈 (텍스트가 보이는 구간)
+// Phase 3 (65~100%): 천천히 감속하며 정착
+function slotEase(p){
+if(p<0.08){
+// Quick ease-in
+const t=p/0.08;
+return t*t*0.12;
+}else if(p<0.65){
+// Fast linear cruise (텍스트가 날아가는 구간)
+return 0.12+(p-0.08)/0.57*0.76;
+}else{
+// Slow ease-out (착지)
+const t=(p-0.65)/0.35;
+return 0.88+0.12*(1-Math.pow(1-t,4));
+}
+}
+
+const durs=[2200,3000,3900]; // 릴마다 다른 속도
 let stopped=0;
 
 for(let r=0;r<3;r++){
 const strip=document.getElementById('s'+r);
-const allItems=strip.querySelectorAll('.reel-item');
 const target=reelResults[r];
-const matching=[];
-allItems.forEach((el,i)=>{if(el.textContent===target)matching.push(i)});
-let tI=matching.length?matching[Math.floor(Math.random()*matching.length)]:Math.floor(allItems.length/2);
-if(tI<8)tI+=items.length*4;
-const tY=-(tI*IH);
+
+// 순서대로 채워진 strip에서 정확한 인덱스 계산
+// rep 22부터 시작해서 target 위치로 (충분한 스크롤 거리 확보)
+const baseRep=22;
+const targetInItems=items.indexOf(target);
+const tI=baseRep*items.length+targetInItems;
+const tY=-(tI*IH); // 정확한 최종 위치
+
 const dur=durs[r];
 let stTime=null,ltY=0;
 
+(function(strip,tY,dur){
 function anim(ts){
 if(!stTime)stTime=ts;
 const p=Math.min((ts-stTime)/dur,1);
-const e=1-Math.pow(1-p,3.5);
-const total=tY-IH*items.length*4;
-const cy=total*e;
+const e=slotEase(p);
+const cy=tY*e;
 strip.style.transform=`translateY(${cy}px)`;
-if(Math.abs(cy-ltY)>IH){sfxTick();ltY=cy}
-if(p<1){requestAnimationFrame(anim)}
-else{
+// 아이템 하나 지날 때마다 틱 소리
+if(Math.abs(cy-ltY)>=IH){sfxTick();ltY=cy}
+if(p<1){
+requestAnimationFrame(anim);
+}else{
 strip.style.transform=`translateY(${tY}px)`;
-sfxStop();stopped++;
+sfxStop();
+stopped++;
 if(stopped===3){
 stopSpinMusic();
 stopSpinParticles();
@@ -963,11 +995,13 @@ document.getElementById('spinRing').classList.remove('active');
 document.getElementById('spinFlash').classList.remove('active');
 spinning=false;
 btn.disabled=false;btn.classList.remove('spinning');
+// 수학적으로 정확하게 계산된 결과 사용 (safety check 불필요)
 showResult(reelResults,isJackpot);
 }
 }
 }
-setTimeout(()=>requestAnimationFrame(anim),r*180);
+setTimeout(()=>requestAnimationFrame(anim),r*200);
+})(strip,tY,dur);
 }
 }
 

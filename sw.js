@@ -1,9 +1,10 @@
-const CACHE_NAME = 'casino-v2';
+const CACHE_NAME = 'casino-v4';
 const urlsToCache = [
   './',
   './index.html',
   './slot-game.html',
   './lotto-game.html',
+  './roulette-game.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',

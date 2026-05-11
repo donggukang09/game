@@ -51,49 +51,70 @@ body{display:flex;justify-content:center;font-family:var(--kr);background:radial
 @keyframes bjG{0%{box-shadow:0 0 8px var(--gold)}100%{box-shadow:0 0 16px var(--gold),0 0 24px var(--g2)}}
 
 /* CARDS ROW */
-.cr{display:flex;align-items:center;justify-content:center;gap:5px;flex-wrap:nowrap;min-height:88px}
+.cr{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:nowrap;min-height:100px}
 
 /* Card flip container */
-.card-wrap{flex-shrink:0;perspective:600px;width:56px;height:80px}
-.card-wrap.sm{width:44px;height:63px}
-.card-wrap.xs{width:36px;height:52px}
-.card-inner{width:100%;height:100%;position:relative;transform-style:preserve-3d;animation:flipIn .45s cubic-bezier(.4,0,.2,1) forwards}
-@keyframes flipIn{
-  0%  {transform:rotateY(90deg) translateY(-10px) scale(.9);opacity:0}
-  40% {transform:rotateY(-12deg) translateY(2px) scale(1.04);opacity:1}
-  65% {transform:rotateY(5deg) translateY(-1px)}
-  80% {transform:rotateY(-2deg)}
-  100%{transform:rotateY(0deg) translateY(0) scale(1)}
+.card-wrap{flex-shrink:0;perspective:800px;width:66px;height:94px}
+.card-wrap.sm{width:50px;height:72px}
+.card-wrap.xs{width:40px;height:58px}
+
+/* 딜링: 위에서 부드럽게 미끄러져 내려오는 느낌 */
+.card-inner{
+  width:100%;height:100%;
+  position:relative;transform-style:preserve-3d;
+  animation:dealIn .3s cubic-bezier(.25,.46,.45,.94) forwards;
 }
-/* Hole card reveal flip */
-.card-inner.reveal{animation:revealFlip .55s cubic-bezier(.4,0,.2,1) forwards}
-@keyframes revealFlip{
+@keyframes dealIn{
+  0%  {transform:translateY(-40px) translateX(8px) rotate(-6deg);opacity:0}
+  60% {opacity:1}
+  100%{transform:translateY(0) translateX(0) rotate(0deg);opacity:1}
+}
+
+/* 홀카드 공개: 깔끔한 Y축 플립 */
+.card-inner.reveal{
+  animation:revealCard .4s cubic-bezier(.4,0,.2,1) forwards;
+}
+@keyframes revealCard{
   0%  {transform:rotateY(0deg)}
-  40% {transform:rotateY(90deg)}
-  41% {}
-  80% {transform:rotateY(-10deg)}
+  49% {transform:rotateY(90deg)}
+  50% {transform:rotateY(90deg)}
   100%{transform:rotateY(0deg)}
 }
 
 .card{
-width:100%;height:100%;
-background:#fff;border-radius:6px;border:1.5px solid #ccc;
-box-shadow:3px 4px 8px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.8);
-display:flex;flex-direction:column;align-items:center;justify-content:center;
-position:relative;font-weight:bold;backface-visibility:hidden;
+  width:100%;height:100%;
+  background:#fff;border-radius:7px;border:1.5px solid #ccc;
+  box-shadow:3px 5px 10px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.9);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  position:relative;font-weight:bold;backface-visibility:hidden;
 }
-.card .cval{font-family:Georgia,serif;font-size:22px;line-height:1}
-.card .csut{font-size:14px;line-height:1;margin-top:2px}
-.card .cor{position:absolute;top:3px;left:5px;font-family:Georgia,serif;font-size:11px;font-weight:bold;line-height:1.2;text-align:left}
-.card .cor.br{top:auto;bottom:3px;left:auto;right:5px;transform:rotate(180deg)}
+.card .cval{font-family:Georgia,serif;font-size:26px;line-height:1}
+.card .csut{font-size:16px;line-height:1;margin-top:3px}
+.card .cor{
+  position:absolute;top:4px;left:5px;
+  font-family:Georgia,serif;font-size:12px;font-weight:bold;line-height:1.25;text-align:left;
+}
+.card .cor.br{top:auto;bottom:4px;left:auto;right:5px;transform:rotate(180deg)}
 .card.red{color:#CC0000}.card.blk{color:#111}
 
-/* Smaller for splits */
-.card-wrap.sm .card .cval{font-size:16px}.card-wrap.sm .card .csut{font-size:10px}.card-wrap.sm .card .cor{font-size:8px}
-.card-wrap.xs .card .cval{font-size:13px}.card-wrap.xs .card .csut{font-size:8px}.card-wrap.xs .card .cor{font-size:7px}
+/* 스플릿용 작은 사이즈 */
+.card-wrap.sm .card .cval{font-size:18px}
+.card-wrap.sm .card .csut{font-size:11px}
+.card-wrap.sm .card .cor{font-size:9px}
+.card-wrap.xs .card .cval{font-size:14px}
+.card-wrap.xs .card .csut{font-size:9px}
+.card-wrap.xs .card .cor{font-size:7px}
 
-.card.fd{background:linear-gradient(135deg,#003399 0%,#0055cc 50%,#003399 100%);border-color:#002277}
-.card.fd::after{content:'';position:absolute;inset:4px;border:2px solid rgba(255,255,255,.25);border-radius:3px;background:repeating-linear-gradient(45deg,transparent,transparent 3px,rgba(255,255,255,.07) 3px,rgba(255,255,255,.07) 4px)}
+/* 앞면 없는 카드 (홀카드) */
+.card.fd{
+  background:linear-gradient(135deg,#003399 0%,#0055cc 50%,#003399 100%);
+  border-color:#002277;
+}
+.card.fd::after{
+  content:'';position:absolute;inset:5px;
+  border:2px solid rgba(255,255,255,.2);border-radius:4px;
+  background:repeating-linear-gradient(45deg,transparent,transparent 3px,rgba(255,255,255,.06) 3px,rgba(255,255,255,.06) 4px);
+}
 
 /* CENTER INFO */
 .ci{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:2px 12px;position:relative;z-index:3}
@@ -305,10 +326,10 @@ function startHand(){
     ()=>{G.hands[0].cards.push(deal());renderAll()},
     ()=>{G.dealer.push(deal());renderAll()},
     ()=>{G.hands[0].cards.push(deal());renderAll()},
-    ()=>{G.dealer.push(deal(false));renderAll()},// hole card face-down
+    ()=>{G.dealer.push(deal(false));renderAll()},
     ()=>afterDeal()
   ];
-  seq.forEach((f,i)=>setTimeout(f,i*320));
+  seq.forEach((f,i)=>setTimeout(f,i*380));
 }
 
 function afterDeal(){
@@ -467,7 +488,9 @@ function renderDealer(){
   dc.innerHTML=G.dealer.map((c,i)=>{
     const isHole=i===1;
     const rev=isHole&&revealing&&c.up;
-    return cHTML(c,n,rev);
+    // 새로 추가된 카드 = 마지막 카드, 딜러 턴 중 추가된 카드
+    const isNew=(i===G.dealer.length-1&&G.phase==='dealer')||(i===G.dealer.length-1&&G.phase==='dealing');
+    return cHTML(c,n,rev,i,isNew||rev);
   }).join('');
   const ds=document.getElementById('dSc');
   if(!G.dealer.length){ds.style.visibility='hidden';return}
@@ -497,7 +520,7 @@ function renderHands(){
     const rmap={win:'WIN!',lose:'LOSE',push:'PUSH',bj:'BJ!',bust:'BUST',sur:'GIVE UP'};
     const rcls={win:'win',lose:'lose',push:'push',bj:'bj',bust:'lose',sur:'sur'};
     return `<div class="hw${isAct?' active':h.done?' done':''}">
-      <div class="cr">${h.cards.map(c=>cHTML(c,sz)).join('')}</div>
+      <div class="cr">${h.cards.map((c,ci)=>cHTML(c,sz,false,ci,ci===h.cards.length-1&&isAct)).join('')}</div>
       ${h.result
         ?`<div class="hr2 ${rcls[h.result]||''}">${rmap[h.result]||''}</div>`
         :`<span class="sc${bust?' bust':bj?' bj':''}" style="margin-top:2px">${v}</span>`}
@@ -507,14 +530,18 @@ function renderHands(){
   const ch=G.hands[Math.min(G.cur,G.hands.length-1)];
   if(ch){const v=hVal(ch.cards);ps.style.visibility='visible';ps.textContent=v;ps.className='sc'+(isBust(ch.cards)?' bust':isBJ(ch.cards)&&!ch.fromSplit?' bj':'')}
 }
-function cHTML(c,sz='',reveal=false){
+// cardIdx: -1이면 마지막 카드(신규), 나머지는 이미 있는 카드 → 딜레이 없이 즉시
+function cHTML(c,sz='',reveal=false,cardIdx=0,isNew=false){
   const wrapSz=sz?` ${sz}`:'';
+  const delay=isNew?0:0; // 새 카드만 애니메이션
+  const noAnim=!isNew&&!reveal?' style="animation:none"':'';
   if(!c.up){
-    return`<div class="card-wrap${wrapSz}"><div class="card-inner"><div class="card fd"></div></div></div>`;
+    return`<div class="card-wrap${wrapSz}"><div class="card-inner"${noAnim}><div class="card fd"></div></div></div>`;
   }
   const red=isRed(c.suit)?'red':'blk';
-  const anim=reveal?'reveal':'';
-  return`<div class="card-wrap${wrapSz}"><div class="card-inner ${anim}"><div class="card ${red}">
+  const animCls=reveal?'reveal':isNew?'':'';
+  const styleAttr=(!isNew&&!reveal)?'style="animation:none"':'';
+  return`<div class="card-wrap${wrapSz}"><div class="card-inner ${animCls}" ${styleAttr}><div class="card ${red}">
     <div class="cor">${c.rank}<br>${c.suit}</div>
     <div class="cval">${c.rank}</div>
     <div class="csut">${c.suit}</div>

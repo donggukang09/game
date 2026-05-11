@@ -39,24 +39,42 @@ body{display:flex;justify-content:center;font-family:var(--kr);background:radial
 .bk:active{background:rgba(255,215,0,.1)}
 .cd{flex:1;text-align:center}
 .cl{font-family:var(--px);font-size:5px;color:rgba(255,215,0,.6);letter-spacing:1px}
-.cv{font-family:var(--dp);font-size:18px;color:var(--gold);text-shadow:0 0 6px var(--gold)}
+.cv{font-family:var(--dp);font-size:22px;color:var(--gold);text-shadow:0 0 8px var(--gold)}
 .sb2{background:rgba(0,0,0,.5);border:1.5px solid var(--gk);color:var(--gold);font-family:var(--px);font-size:7px;padding:6px 10px;border-radius:6px;cursor:pointer;-webkit-tap-highlight-color:transparent}
 
 /* ZONES */
-.dz,.pz{flex-shrink:0;padding:6px 10px 3px;display:flex;flex-direction:column;align-items:center;position:relative;z-index:3}
+.dz,.pz{flex-shrink:0;padding:4px 10px 2px;display:flex;flex-direction:column;align-items:center;position:relative;z-index:3}
 .zl{font-family:var(--px);font-size:6px;letter-spacing:2px;color:rgba(255,215,0,.7);margin-bottom:4px;display:flex;align-items:center;gap:8px}
-.sc{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:18px;padding:0 5px;background:rgba(0,0,0,.6);border:1.5px solid var(--gk);border-radius:10px;font-family:var(--dp);font-size:12px;color:var(--gold)}
-.sc.bust{background:rgba(220,20,60,.3);border-color:var(--red);color:var(--red)}
-.sc.bj{background:rgba(255,215,0,.3);border-color:var(--gold);color:var(--gold);animation:bjG 1s ease-in-out infinite alternate}
-@keyframes bjG{0%{box-shadow:0 0 8px var(--gold)}100%{box-shadow:0 0 16px var(--gold),0 0 24px var(--g2)}}
+
+/* 숫자 합 배지 - 크고 눈에 띄게 */
+.sc{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:42px;height:32px;padding:0 10px;
+  background:rgba(0,0,0,.75);
+  border:2px solid var(--gk);border-radius:8px;
+  font-family:var(--dp);font-size:22px;
+  color:var(--gold);text-shadow:0 0 8px var(--gold);
+  box-shadow:0 0 10px rgba(255,215,0,.2);
+}
+.sc.bust{
+  background:rgba(220,20,60,.4);border-color:var(--red);
+  color:var(--red);text-shadow:0 0 8px var(--red);
+  box-shadow:0 0 10px rgba(220,20,60,.4);
+}
+.sc.bj{
+  background:rgba(255,215,0,.25);border-color:var(--gold);
+  color:var(--gold);
+  animation:bjG 1s ease-in-out infinite alternate;
+}
+@keyframes bjG{0%{box-shadow:0 0 10px var(--gold)}100%{box-shadow:0 0 20px var(--gold),0 0 32px var(--g2)}}
 
 /* CARDS ROW */
-.cr{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:nowrap;min-height:100px}
+.cr{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:nowrap;min-height:114px}
 
-/* Card flip container */
-.card-wrap{flex-shrink:0;perspective:800px;width:66px;height:94px}
-.card-wrap.sm{width:50px;height:72px}
-.card-wrap.xs{width:40px;height:58px}
+/* Card flip container - 더 큰 카드 */
+.card-wrap{flex-shrink:0;perspective:800px;width:78px;height:110px}
+.card-wrap.sm{width:56px;height:80px}
+.card-wrap.xs{width:44px;height:63px}
 
 /* 딜링: 위에서 부드럽게 미끄러져 내려오는 느낌 */
 .card-inner{
@@ -83,27 +101,27 @@ body{display:flex;justify-content:center;font-family:var(--kr);background:radial
 
 .card{
   width:100%;height:100%;
-  background:#fff;border-radius:7px;border:1.5px solid #ccc;
-  box-shadow:3px 5px 10px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.9);
+  background:#fff;border-radius:8px;border:2px solid #ccc;
+  box-shadow:3px 5px 12px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,255,255,.9);
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   position:relative;font-weight:bold;backface-visibility:hidden;
 }
-.card .cval{font-family:Georgia,serif;font-size:26px;line-height:1}
-.card .csut{font-size:16px;line-height:1;margin-top:3px}
+.card .cval{font-family:Georgia,serif;font-size:32px;line-height:1}
+.card .csut{font-size:20px;line-height:1;margin-top:4px}
 .card .cor{
-  position:absolute;top:4px;left:5px;
-  font-family:Georgia,serif;font-size:12px;font-weight:bold;line-height:1.25;text-align:left;
+  position:absolute;top:5px;left:6px;
+  font-family:Georgia,serif;font-size:13px;font-weight:bold;line-height:1.25;text-align:left;
 }
-.card .cor.br{top:auto;bottom:4px;left:auto;right:5px;transform:rotate(180deg)}
+.card .cor.br{top:auto;bottom:5px;left:auto;right:6px;transform:rotate(180deg)}
 .card.red{color:#CC0000}.card.blk{color:#111}
 
 /* 스플릿용 작은 사이즈 */
-.card-wrap.sm .card .cval{font-size:18px}
-.card-wrap.sm .card .csut{font-size:11px}
-.card-wrap.sm .card .cor{font-size:9px}
-.card-wrap.xs .card .cval{font-size:14px}
-.card-wrap.xs .card .csut{font-size:9px}
-.card-wrap.xs .card .cor{font-size:7px}
+.card-wrap.sm .card .cval{font-size:22px}
+.card-wrap.sm .card .csut{font-size:13px}
+.card-wrap.sm .card .cor{font-size:10px}
+.card-wrap.xs .card .cval{font-size:17px}
+.card-wrap.xs .card .csut{font-size:10px}
+.card-wrap.xs .card .cor{font-size:8px}
 
 /* 앞면 없는 카드 (홀카드) */
 .card.fd{
@@ -112,7 +130,7 @@ body{display:flex;justify-content:center;font-family:var(--kr);background:radial
 }
 .card.fd::after{
   content:'';position:absolute;inset:5px;
-  border:2px solid rgba(255,255,255,.2);border-radius:4px;
+  border:2px solid rgba(255,255,255,.2);border-radius:5px;
   background:repeating-linear-gradient(45deg,transparent,transparent 3px,rgba(255,255,255,.06) 3px,rgba(255,255,255,.06) 4px);
 }
 
@@ -127,9 +145,16 @@ body{display:flex;justify-content:center;font-family:var(--kr);background:radial
 .hw{display:flex;flex-direction:column;align-items:center;border:2px solid transparent;border-radius:8px;padding:3px 4px;transition:border-color .2s;min-width:0}
 .hw.active{border-color:var(--gold);box-shadow:0 0 8px rgba(255,215,0,.4)}
 .hw.done{opacity:.65}
-.hr2{font-family:var(--dp);font-size:11px;margin-top:2px;letter-spacing:1px}
+.hr2{font-family:var(--dp);font-size:13px;margin-top:3px;letter-spacing:1px}
 .hr2.win{color:var(--gold);text-shadow:0 0 6px var(--gold)}.hr2.lose{color:#777}.hr2.push{color:#00FFFF}.hr2.bj{color:var(--gold);animation:bjG 1s infinite alternate}.hr2.sur{color:#aaa}
-.hb{font-family:var(--px);font-size:5px;color:rgba(255,215,0,.6);margin-top:1px}
+/* 베팅 금액 - 눈에 띄게 크게 */
+.hb{
+  font-family:var(--dp);font-size:13px;
+  color:var(--gold);text-shadow:0 0 6px rgba(255,215,0,.5);
+  margin-top:3px;letter-spacing:1px;
+  background:rgba(0,0,0,.5);border:1.5px solid rgba(255,215,0,.3);
+  border-radius:6px;padding:2px 10px;
+}
 
 /* ACTIONS */
 .ac{flex-shrink:0;padding:5px 10px;display:flex;flex-direction:column;gap:4px;position:relative;z-index:3}
@@ -157,9 +182,9 @@ body{display:flex;justify-content:center;font-family:var(--kr);background:radial
 .ch25k{background:radial-gradient(circle at 30% 30%,#FF6B35,#E60012 50%,#8B0000 100%)}
 .ch50k{background:radial-gradient(circle at 30% 30%,#1a1a1a,#000 50%,#000 100%);border:2px solid var(--gold)}
 .bctl{display:flex;align-items:center;gap:5px}
-.bpd{flex:1;background:rgba(0,0,0,.5);border:2px solid var(--gk);border-radius:7px;padding:6px 8px;text-align:center}
+.bpd{flex:1;background:rgba(0,0,0,.6);border:2px solid var(--gk);border-radius:7px;padding:6px 8px;text-align:center}
 .bpl{font-family:var(--px);font-size:5px;letter-spacing:1px;color:rgba(255,215,0,.6)}
-.bpv{font-family:var(--dp);font-size:17px;color:var(--gold);text-shadow:0 0 5px var(--gold)}
+.bpv{font-family:var(--dp);font-size:24px;color:var(--gold);text-shadow:0 0 8px var(--gold);line-height:1.1}
 .db{flex:2;padding:11px;background:linear-gradient(180deg,var(--gold) 0%,var(--g2) 50%,var(--gk) 100%);border:2px solid var(--gk);border-radius:9px;font-family:var(--dp);font-size:15px;letter-spacing:2px;color:#1a0511;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 3px 0 var(--gk);-webkit-tap-highlight-color:transparent}
 .db:disabled{opacity:.4;cursor:not-allowed;box-shadow:none}
 .db:not(:disabled):active{transform:translateY(2px);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 1px 0 var(--gk)}

@@ -1,0 +1,956 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>우리집 식비 절약</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DotGothic16&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#1a1a2e;
+    --bg2:#16213e;
+    --card:#0f3460;
+    --line:#2a2a4a;
+    --accent:#e94560;
+    --accent2:#f7b731;
+    --good:#4CAF50;
+    --text:#eaeaea;
+    --text2:#c9c9e0;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'DotGothic16','Outfit',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+  .pixel{ font-family:'Press Start 2P', monospace; }
+  canvas{ image-rendering:pixelated; image-rendering:crisp-edges; }
+
+  .stars{ position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none; }
+  .star{ position:absolute; width:2px; height:2px; background:#fff; border-radius:50%; animation:twinkle var(--dur) ease-in-out infinite; }
+  @keyframes twinkle{ 0%,100%{opacity:.15;} 50%{opacity:.9;} }
+
+  .wrap{ position:relative; z-index:1; max-width:520px; margin:0 auto; padding:20px 16px 56px; }
+
+  header.topbar{ display:flex; align-items:center; justify-content:space-between; padding:6px 2px 18px; }
+  header.topbar h1{
+    font-size:17px; font-weight:800; margin:0; letter-spacing:.2px; color:#fff;
+    text-shadow:0 0 12px rgba(247,183,49,.5), 0 0 24px rgba(233,69,96,.25);
+  }
+  .profile-badge{
+    font-family:'DotGothic16','Outfit',sans-serif;
+    font-size:12px; padding:6px 14px; border-radius:20px;
+    background:var(--bg2); border:2px solid var(--line); color:var(--accent2); cursor:pointer;
+  }
+
+  .loading-screen{ padding:80px 16px; text-align:center; color:var(--text2); font-size:12px; }
+  .loading-screen .pixel{ font-size:11px; color:var(--accent2); }
+  .blink{ animation:blink 1s step-start infinite; }
+  @keyframes blink{ 50%{opacity:0;} }
+
+  .banner{ background:rgba(247,183,49,0.12); border:2px solid var(--line); color:var(--text); font-size:13px; padding:10px 12px; border-radius:10px; margin-bottom:14px; line-height:1.5; }
+  .banner.err{ background:rgba(233,69,96,0.16); border-color:var(--accent); }
+  .banner.saving{ background:rgba(233,69,96,0.08); font-size:12px; padding:7px 12px; }
+
+  .card{
+    background:var(--bg2); border:2px solid var(--line); border-radius:16px;
+    padding:16px; margin-bottom:14px; position:relative; overflow:hidden;
+  }
+  .card::before{
+    content:''; position:absolute; top:0; left:0; right:0; height:3px;
+    background:linear-gradient(90deg,var(--accent),var(--accent2),#6c5ce7,var(--accent));
+    background-size:300% 100%; animation:gradientMove 4s linear infinite;
+  }
+  @keyframes gradientMove{ 0%{background-position:0% 50%;} 100%{background-position:300% 50%;} }
+  .card h2{
+    font-weight:800; font-size:14px; margin:0 0 14px; color:var(--accent2);
+    letter-spacing:.2px; display:flex; align-items:center; gap:8px; line-height:1.6;
+  }
+  .card h2::after{ content:''; flex:1; height:1px; background:linear-gradient(90deg,var(--line),transparent); }
+  .card h2 .sub{ font-weight:400; color:var(--text2); font-size:12px; }
+
+  /* mascot */
+  .mascot-card{ padding-top:26px; }
+  .mascot-card::before{ display:none; }
+  .mascot-stage{
+    position:relative; display:flex; justify-content:center; align-items:flex-end; gap:20px;
+    padding:18px 0 4px;
+  }
+  .mascot-ground{
+    position:absolute; left:-16px; right:-16px; bottom:-16px; height:22px;
+    background:linear-gradient(180deg,#2d5a2a,#1a3520); z-index:0;
+  }
+  .mascot-cat{ position:relative; z-index:1; cursor:pointer; transition:transform .15s; }
+  .mascot-cat:hover{ transform:translateY(-6px); }
+  .mascot-name{
+    font-weight:700; font-size:11.5px; color:var(--text2);
+    text-align:center; margin-top:6px; letter-spacing:.3px;
+  }
+  .mascot-col{ position:relative; z-index:1; text-align:center; }
+  .mascot-bubble{
+    position:absolute; top:-14px; left:50%; transform:translateX(-50%);
+    background:var(--card); border:2px solid var(--accent2); border-radius:10px;
+    padding:8px 14px; font-size:13px; font-weight:700; white-space:nowrap; color:#fff;
+    box-shadow:0 4px 15px rgba(0,0,0,.5), 0 0 10px rgba(247,183,49,.15); z-index:2;
+  }
+  .mascot-bubble::after{
+    content:''; position:absolute; bottom:-7px; left:50%; transform:translateX(-50%);
+    border:4px solid transparent; border-top-color:var(--accent2);
+  }
+
+  /* budget / week card */
+  .week-row{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:4px; }
+  .spent-num{ font-weight:800; font-size:28px; }
+  .spent-sub{ font-size:12.5px; color:var(--text2); margin-top:6px; }
+  .remain{ text-align:right; }
+  .remain .label{ font-size:11.5px; color:var(--text2); }
+  .remain .num{ font-weight:700; font-size:18px; margin-top:6px; display:block; }
+  .pixel-bar{ display:flex; gap:2px; margin:14px 0 8px; }
+  .pixel-seg{ flex:1; height:14px; background:var(--line); border-radius:2px; }
+  .pixel-seg.on{ box-shadow:0 0 6px currentColor; }
+  .status-line{ display:flex; align-items:center; gap:6px; font-size:13.5px; font-weight:600; color:var(--text2); margin-bottom:4px; }
+  .status-dot{ width:8px; height:8px; border-radius:50%; flex:none; box-shadow:0 0 6px currentColor; }
+  .pace-line{ font-size:12.5px; color:var(--text2); margin-top:8px; }
+  .budget-edit-row{ display:flex; gap:8px; margin-top:12px; }
+  .budget-edit-row input{ flex:1; }
+  .link-btn{ font-size:12.5px; font-weight:600; color:var(--accent2); background:none; border:none; cursor:pointer; padding:6px 0 0; font-family:inherit; }
+
+  input[type=text], input[type=number], input[type=date]{
+    font-family:'DotGothic16','Outfit',sans-serif; font-size:14px; padding:10px 12px; border-radius:9px;
+    border:2px solid var(--line); background:var(--card); color:var(--text); width:100%;
+  }
+  input:focus{ outline:none; border-color:var(--accent2); box-shadow:0 0 8px rgba(247,183,49,.3); }
+  label.field-label{ font-size:12.5px; color:var(--text2); display:block; margin:0 0 5px 2px; }
+  .add-grid{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px; }
+  .chip-row{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+  .chip{
+    font-size:13.5px; font-weight:500; padding:7px 13px 7px 9px; border-radius:999px; border:2px solid var(--line);
+    background:var(--card); color:var(--text2); cursor:pointer; display:flex; align-items:center; gap:6px;
+    font-family:'DotGothic16','Outfit',sans-serif;
+  }
+  .chip.active{ background:var(--accent); border-color:var(--accent); color:#fff; box-shadow:0 0 10px rgba(233,69,96,.5); }
+  .full-btn{
+    width:100%; padding:12px; border-radius:10px; border:2px solid var(--accent);
+    background:var(--accent); color:#fff; font-size:14px; font-weight:700; cursor:pointer;
+    font-family:'DotGothic16','Outfit',sans-serif; box-shadow:0 0 14px rgba(233,69,96,.35);
+  }
+  .full-btn:active{ transform:translateY(1px); }
+  .full-btn:disabled{ opacity:.4; cursor:not-allowed; box-shadow:none; }
+
+  .entry{ display:flex; align-items:center; gap:10px; padding:10px 0; border-top:1px solid var(--line); }
+  .entry:first-child{ border-top:none; }
+  .entry .meta{ flex:1; min-width:0; }
+  .entry .who{ font-size:13.5px; color:var(--text2); }
+  .entry .who b{ color:var(--text); font-weight:700; }
+  .entry .date{ font-size:11.5px; color:var(--text2); flex:none; width:34px; font-weight:600; }
+  .entry .amount{ font-size:14.5px; font-weight:700; flex:none; font-variant-numeric:tabular-nums; color:var(--accent2); }
+  .entry .del{ flex:none; width:22px; height:22px; border-radius:50%; border:none; background:none; color:var(--text2); font-size:15px; cursor:pointer; line-height:1; }
+  .entry .del:hover{ color:var(--accent); }
+  .empty{ font-size:12.5px; color:var(--text2); text-align:center; padding:20px 0; }
+
+  .seg{ display:flex; gap:6px; margin-bottom:14px; }
+  .seg button{
+    flex:1; font-size:13px; font-weight:600; padding:9px; border-radius:8px; border:2px solid var(--line);
+    background:var(--card); color:var(--text2); cursor:pointer; font-family:'DotGothic16','Outfit',sans-serif;
+  }
+  .seg button.active{ background:var(--accent2); color:#1a1a2e; border-color:var(--accent2); font-weight:700; }
+
+  .stat-row{ display:flex; align-items:center; gap:10px; margin-bottom:11px; }
+  .stat-row:last-child{ margin-bottom:0; }
+  .stat-label{ width:66px; font-size:13px; color:var(--text2); flex:none; display:flex; align-items:center; gap:6px; }
+  .stat-bar-track{ flex:1; height:10px; border-radius:6px; background:var(--line); overflow:hidden; }
+  .stat-bar-fill{ height:100%; border-radius:6px; }
+  .stat-num{ width:110px; text-align:right; font-size:12.5px; font-variant-numeric:tabular-nums; color:var(--text); flex:none; font-weight:600; }
+
+  .streak-row{ display:flex; gap:10px; margin-bottom:14px; }
+  .streak-box{ flex:1; background:var(--card); border:2px solid var(--line); border-radius:12px; padding:12px 10px; text-align:center; }
+  .streak-box .num{ font-weight:800; font-size:22px; color:var(--accent2); }
+  .streak-box .label{ font-size:11.5px; color:var(--text2); margin-top:6px; }
+
+  .whist-row{ display:flex; align-items:center; gap:10px; padding:9px 0; border-top:1px solid var(--line); }
+  .whist-row:first-child{ border-top:none; }
+  .whist-range{ width:74px; font-size:12.5px; color:var(--text2); flex:none; }
+  .whist-bar-track{ flex:1; height:9px; border-radius:6px; background:var(--line); overflow:hidden; }
+  .whist-bar-fill{ height:100%; border-radius:6px; }
+  .whist-amt{ width:92px; text-align:right; font-size:12.5px; font-variant-numeric:tabular-nums; font-weight:600; flex:none; }
+  .badge{ font-size:11px; padding:4px 9px; border-radius:999px; font-weight:700; flex:none; }
+  .badge.good{ background:rgba(76,175,80,.18); color:var(--good); }
+  .badge.bad{ background:rgba(233,69,96,.18); color:var(--accent); }
+
+  .history-chart{ display:flex; align-items:flex-end; gap:8px; height:100px; padding-top:8px; margin-bottom:8px; }
+  .history-col{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; gap:6px; }
+  .history-bar-wrap{ width:100%; flex:1; display:flex; align-items:flex-end; justify-content:center; }
+  .history-bar{ width:60%; min-width:14px; border-radius:3px 3px 1px 1px; background:var(--accent2); box-shadow:0 0 8px rgba(247,183,49,.35); }
+  .history-label{ font-size:11.5px; color:var(--text2); font-weight:600; }
+  .history-amt{ font-size:10.5px; color:var(--text2); }
+  .month-compare{ font-size:13px; color:var(--text2); margin-top:6px; padding-top:12px; border-top:1px solid var(--line); line-height:1.6; }
+  .month-compare b{ color:var(--accent2); }
+
+  .stat-line{ display:flex; justify-content:space-between; align-items:center; padding:9px 0; border-top:1px solid var(--line); font-size:13.5px; }
+  .stat-line:first-child{ border-top:none; }
+  .stat-line .k{ color:var(--text2); }
+  .stat-line .v{ font-weight:700; color:var(--accent2); }
+  .split-bar{ display:flex; height:10px; border-radius:6px; overflow:hidden; margin:8px 0 6px; background:var(--line); }
+  .split-bar div:first-child{ background:var(--accent); }
+  .split-bar div:last-child{ background:#6c5ce7; }
+  .split-legend{ display:flex; justify-content:space-between; font-size:12px; color:var(--text2); font-weight:600; }
+
+  .footer-note{ text-align:center; font-size:11.5px; color:var(--text2); margin-top:6px; line-height:1.7; }
+  .refresh-btn{ font-size:11.5px; color:var(--accent2); background:none; border:none; cursor:pointer; padding:0; text-decoration:underline; font-family:inherit; }
+</style>
+</head>
+<body>
+<div class="stars" id="stars"></div>
+<div class="wrap" id="app">
+  <header class="topbar">
+    <h1>🐾 우리집 식비 절약</h1>
+    <button type="button" class="profile-badge" id="profileBadge" data-action="change-profile" hidden></button>
+  </header>
+
+  <div id="loadingScreen" class="loading-screen">
+    <div class="pixel">LOADING<span class="blink">_</span></div>
+  </div>
+
+  <div id="mainScreen" hidden>
+    <div id="banners"></div>
+
+    <section class="card mascot-card" id="mascotCard">
+      <div class="mascot-stage">
+        <div class="mascot-ground"></div>
+        <div class="mascot-bubble" id="mascotBubble">냥냥</div>
+        <div class="mascot-col">
+          <canvas id="dendeCanvas" class="mascot-cat" width="64" height="64"></canvas>
+          <div class="mascot-name">덴데</div>
+        </div>
+        <div class="mascot-col">
+          <canvas id="booCanvas" class="mascot-cat" width="64" height="64"></canvas>
+          <div class="mascot-name">부우</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="weekCard"></section>
+
+    <section class="card" id="addCard">
+      <h2>지출 추가</h2>
+      <div class="add-grid">
+        <div>
+          <label class="field-label" for="inpAmount">금액</label>
+          <input type="text" inputmode="numeric" id="inpAmount" placeholder="0">
+        </div>
+        <div>
+          <label class="field-label" for="inpDate">날짜</label>
+          <input type="date" id="inpDate">
+        </div>
+      </div>
+      <label class="field-label">카테고리</label>
+      <div class="chip-row" id="catChips"></div>
+      <label class="field-label" for="inpMemo">내용 (선택)</label>
+      <input type="text" id="inpMemo" placeholder="예: 이마트 장보기" style="margin-bottom:12px;">
+      <button type="button" class="full-btn" id="addBtn" data-action="add-expense">추가하기</button>
+    </section>
+
+    <section class="card" id="entryListCard"></section>
+    <section class="card" id="categoryCard"></section>
+    <section class="card" id="weekHistoryCard"></section>
+    <section class="card" id="monthCard"></section>
+    <section class="card" id="statsCard"></section>
+
+    <div class="footer-note">
+      데이터는 연결된 구글시트에 저장돼요. 로그인 없이 이 링크에 접속하면 누구나 함께 기록할 수 있어요.<br>
+      <button type="button" class="refresh-btn" data-action="refresh">지금 새로고침</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ============== 설정 ==============
+  var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwE9y914-zscWOoAWSSJb2zoTHZ8g5qqR9-pJTJx2cUtXO6MbIfJRlxVVEZdzIrG0I3/exec';
+  var DEFAULT_WEEKLY_BUDGET = 130000;
+  // ===================================
+
+  var CATEGORIES = [
+    { id:'delivery',   label:'배달', icon:'delivery' },
+    { id:'mart',       label:'마트', icon:'mart' },
+    { id:'coupang',    label:'쿠팡', icon:'coupang' },
+    { id:'coffee',     label:'커피', icon:'coffee' },
+    { id:'restaurant', label:'식당', icon:'restaurant' },
+    { id:'etc',        label:'기타', icon:'etc' }
+  ];
+  var CAT_MAP = {};
+  CATEGORIES.forEach(function(c){ CAT_MAP[c.id] = c; });
+  function catOf(id){ return CAT_MAP[id] || CAT_MAP.etc; }
+
+  // ---------- 8x8 도트 아이콘 ----------
+  var ICON_PALETTES = {
+    delivery: { L:'#b5793a', D:'#8a5a26', B:'#e8b57a', R:'#e94560' },
+    mart:     { H:'#c99a52', K:'#f0a852', S:'#8a5a26' },
+    coupang:  { W:'#eef3ff', F:'#e94560', D:'#2a3a6e', T:'#f7b731' },
+    coffee:   { C:'#e8d9c0', D:'#6b4226', S:'#c9c9d8', H:'#8a5a26' },
+    restaurant:{ W:'#f5f0e6', D:'#c9a86a', S:'#8a5a26', R:'#ffffff' },
+    etc:      { Y:'#f7b731', O:'#d99a1a' }
+  };
+  var ICON_GRIDS = {
+    delivery: [
+      '..LLLL..',
+      '.LLLLLL.',
+      'LLLLLLLL',
+      'DDDDDDDD',
+      'BBRRRRBB',
+      'BBRRRRBB',
+      'BBRRRRBB',
+      '.BBBBBB.'
+    ],
+    mart: [
+      '...HHH..',
+      '..H...H.',
+      '.H.....H',
+      'KKKKKKKK',
+      '.KKKKKK.',
+      '.KKKKKK.',
+      '..SKKS..',
+      '........'
+    ],
+    coupang: [
+      '...WW...',
+      '..WWWW..',
+      '.WWDDWW.',
+      '.WWWWWW.',
+      'FWWWWWWF',
+      '.FWWWWF.',
+      '..TTTT..',
+      '...TT...'
+    ],
+    coffee: [
+      '.S.S.S..',
+      '..S.S...',
+      'CCCCCCC.',
+      'DDDDDDDH',
+      'DDDDDDDH',
+      'CDDDDDC.',
+      '.CCCCC..',
+      '..CCC...'
+    ],
+    restaurant: [
+      '......S.',
+      '.....S..',
+      '.RRRRR..',
+      'DWWWWWD.',
+      'DDDDDDD.',
+      '.DDDDD..',
+      '..DDD...',
+      '........'
+    ],
+    etc: [
+      '...Y....',
+      '..YYY...',
+      '.YYYYY..',
+      'YYYYYYY.',
+      '.OOOOO..',
+      '.YY.YY..',
+      '.Y...Y..',
+      '........'
+    ]
+  };
+  function drawIcon(canvas, iconId, scale){
+    if (!canvas) return;
+    var grid = ICON_GRIDS[iconId] || ICON_GRIDS.etc;
+    var palette = ICON_PALETTES[iconId] || ICON_PALETTES.etc;
+    var s = scale || 2;
+    var ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    for (var y=0;y<grid.length;y++){
+      var row = grid[y];
+      for (var x=0;x<row.length;x++){
+        var ch = row[x];
+        if (ch === '.') continue;
+        ctx.fillStyle = palette[ch] || '#fff';
+        ctx.fillRect(x*s, y*s, s, s);
+      }
+    }
+  }
+  function paintAllIcons(){
+    document.querySelectorAll('canvas.pixel-icon').forEach(function(cv){
+      drawIcon(cv, cv.dataset.icon, Number(cv.dataset.scale || 2));
+    });
+  }
+  function iconTag(iconId, px){
+    px = px || 16;
+    var grid = ICON_GRIDS[iconId] || ICON_GRIDS.etc;
+    var scale = Math.round(px / grid[0].length);
+    var size = scale * grid[0].length;
+    return '<canvas class="pixel-icon" data-icon="' + iconId + '" data-scale="' + scale + '" width="' + size + '" height="' + size + '" style="width:' + px + 'px;height:' + px + 'px;flex:none;"></canvas>';
+  }
+
+  // ---------- 16x16 도트 고양이 (덴데 / 부우) ----------
+  function drawPixelCat(canvas, type, scale){
+    var ctx = canvas.getContext('2d');
+    var s = scale || 4;
+    ctx.imageSmoothingEnabled = false;
+
+    var colors = type === 'dende' ? {
+      dark:'#4a3728', mid:'#6b5240', light:'#ffffff', ear:'#d4a0a0',
+      eye:'#4CAF50', nose:'#d4a0a0', pupil:'#1a1a1a', stripe:'#3d2b1f'
+    } : {
+      dark:'#e8913a', mid:'#f0a852', light:'#ffffff', ear:'#e8a0a0',
+      eye:'#8BC34A', nose:'#e8a0a0', pupil:'#1a1a1a', stripe:'#d07830'
+    };
+
+    var p = function(x,y,c){ ctx.fillStyle = c; ctx.fillRect(x*s, y*s, s, s); };
+
+    var draw = [
+      [4,1,colors.dark],[5,1,colors.dark],[9,1,colors.dark],[10,1,colors.dark],
+      [3,2,colors.dark],[4,2,colors.ear],[5,2,colors.dark],[9,2,colors.dark],[10,2,colors.ear],[11,2,colors.dark],
+      [3,3,colors.dark],[4,3,colors.dark],[5,3,colors.dark],[9,3,colors.dark],[10,3,colors.dark],[11,3,colors.dark],
+      [4,3,colors.dark],[5,3,colors.mid],[6,3,colors.mid],[7,3,colors.dark],[8,3,colors.mid],[9,3,colors.dark],
+      [3,4,colors.dark],[4,4,colors.mid],[5,4,colors.light],[6,4,colors.mid],[7,4,colors.light],[8,4,colors.mid],[9,4,colors.light],[10,4,colors.mid],[11,4,colors.dark],
+      [3,5,colors.mid],[4,5,colors.light],[5,5,colors.eye],[6,5,colors.light],[7,5,colors.light],[8,5,colors.light],[9,5,colors.eye],[10,5,colors.light],[11,5,colors.mid],
+      [3,6,colors.mid],[4,6,colors.light],[5,6,colors.pupil],[6,6,colors.light],[7,6,colors.nose],[8,6,colors.light],[9,6,colors.pupil],[10,6,colors.light],[11,6,colors.mid],
+      [4,7,colors.light],[5,7,colors.light],[6,7,colors.light],[7,7,colors.light],[8,7,colors.light],[9,7,colors.light],[10,7,colors.light],
+      [3,8,colors.dark],[4,8,colors.mid],[5,8,colors.light],[6,8,colors.light],[7,8,colors.light],[8,8,colors.light],[9,8,colors.light],[10,8,colors.mid],[11,8,colors.dark],
+      [2,9,colors.dark],[3,9,colors.mid],[4,9,colors.light],[5,9,colors.light],[6,9,colors.light],[7,9,colors.light],[8,9,colors.light],[9,9,colors.light],[10,9,colors.mid],[11,9,colors.dark],
+      [2,10,colors.dark],[3,10,colors.mid],[4,10,colors.light],[5,10,colors.light],[6,10,colors.light],[7,10,colors.light],[8,10,colors.light],[9,10,colors.light],[10,10,colors.mid],[11,10,colors.dark],
+      [2,11,colors.dark],[3,11,colors.mid],[4,11,colors.mid],[5,11,colors.light],[6,11,colors.light],[7,11,colors.light],[8,11,colors.light],[9,11,colors.mid],[10,11,colors.mid],[11,11,colors.dark],
+      [3,12,colors.dark],[4,12,colors.light],[5,12,colors.light],[6,12,colors.light],[7,12,colors.light],[8,12,colors.light],[9,12,colors.light],[10,12,colors.dark],[12,12,colors.dark],
+      [3,13,colors.light],[4,13,colors.light],[5,13,colors.light],[6,13,colors.light],[7,13,colors.light],[8,13,colors.light],[9,13,colors.light],[10,13,colors.light],[11,13,colors.dark],[12,13,colors.dark]
+    ];
+    var stripes = [[5,4,colors.stripe],[7,4,colors.stripe],[6,5,colors.stripe],[8,5,colors.stripe],[4,9,colors.stripe],[6,9,colors.stripe],[8,9,colors.stripe],[5,10,colors.stripe],[7,10,colors.stripe]];
+
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    draw.forEach(function(d){ p(d[0],d[1],d[2]); });
+    stripes.forEach(function(d){ p(d[0],d[1],d[2]); });
+  }
+
+  var entries = [];
+  var weeklyBudget = DEFAULT_WEEKLY_BUDGET;
+  var profile = localStorage.getItem('fb_profile') || null;
+  var formCategory = CATEGORIES[0].id;
+  var categoryPeriod = 'week';
+  var editingBudget = false;
+  var saving = false;
+  var refreshTimer = null;
+
+  // ---------- date / week helpers ----------
+  function pad(n){ return String(n).length < 2 ? '0' + n : String(n); }
+  function todayISO(){ var d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()); }
+  function parseISO(s){ var p = s.split('-').map(Number); return new Date(p[0], p[1]-1, p[2]); }
+  function toISO(d){ return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()); }
+  function addDays(dateStr, n){ var d = parseISO(dateStr); d.setDate(d.getDate()+n); return toISO(d); }
+  function weekStartOf(dateStr){
+    var d = parseISO(dateStr);
+    var day = d.getDay();
+    var diff = (day === 0 ? -6 : 1 - day);
+    d.setDate(d.getDate()+diff);
+    return toISO(d);
+  }
+  function weekEndOf(weekStart){ return addDays(weekStart, 6); }
+  function fmtWeekRange(weekStart){
+    var s = parseISO(weekStart), e = parseISO(weekEndOf(weekStart));
+    return (s.getMonth()+1) + '/' + s.getDate() + ' ~ ' + (e.getMonth()+1) + '/' + e.getDate();
+  }
+  function fmtWon(n){ return (Math.round(Number(n)||0)).toLocaleString('ko-KR') + '원'; }
+  function parseAmount(str){ var n = parseInt(String(str).replace(/[^0-9]/g,''),10); return isNaN(n) ? 0 : n; }
+  function escapeHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  var MONTH_NAMES = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+  function currentMonthKey(){ return todayISO().slice(0,7); }
+  function lastNMonths(n){
+    var cur = todayISO().slice(0,7).split('-').map(Number);
+    var out = [];
+    for (var i = n-1; i >= 0; i--){
+      var d = new Date(cur[0], cur[1]-1-i, 1);
+      out.push(d.getFullYear() + '-' + pad(d.getMonth()+1));
+    }
+    return out;
+  }
+
+  // ---------- backend (Google Apps Script web app, no login required) ----------
+  function apiGet(action){
+    return fetch(APPS_SCRIPT_URL + '?action=' + encodeURIComponent(action), { cache:'no-store' }).then(function(res){
+      if (!res.ok) throw new Error('서버 오류 (' + res.status + ')');
+      return res.json();
+    }).then(function(data){
+      if (data && data.error) throw new Error(data.error);
+      return data;
+    });
+  }
+  function apiPost(action, payload){
+    return fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: action, payload: payload })
+    }).then(function(res){
+      if (!res.ok) throw new Error('서버 오류 (' + res.status + ')');
+      return res.json();
+    }).then(function(data){
+      if (data && data.error) throw new Error(data.error);
+      return data;
+    });
+  }
+  function applyState(state){
+    weeklyBudget = Number(state.budget) || DEFAULT_WEEKLY_BUDGET;
+    entries = (state.entries || []).map(function(e){
+      return {
+        row: e.row,
+        date: String(e.date||''),
+        who: String(e.who||''),
+        amount: Number(e.amount)||0,
+        memo: String(e.memo||''),
+        category: CAT_MAP[e.category] ? e.category : 'etc'
+      };
+    }).filter(function(e){ return e.date; });
+  }
+
+  // ---------- aggregation ----------
+  function entriesInRange(startDate, endDate){
+    return entries.filter(function(e){ return e.date >= startDate && e.date <= endDate; })
+      .sort(function(a,b){ return a.date < b.date ? 1 : (a.date > b.date ? -1 : b.row - a.row); });
+  }
+  function entriesInWeek(weekStart){ return entriesInRange(weekStart, weekEndOf(weekStart)); }
+  function weekTotal(weekStart){ return entriesInWeek(weekStart).reduce(function(s,e){ return s+e.amount; },0); }
+  function weekHasData(weekStart){ return entriesInWeek(weekStart).length > 0; }
+  function allWeeksDesc(count){
+    var cur = weekStartOf(todayISO());
+    var out = [];
+    for (var i=0;i<count;i++){ out.push(addDays(cur, -7*i)); }
+    return out;
+  }
+  function monthTotal(mKey){ return entries.filter(function(e){ return e.date.slice(0,7)===mKey; }).reduce(function(s,e){return s+e.amount;},0); }
+  function entriesInMonth(mKey){ return entries.filter(function(e){ return e.date.slice(0,7)===mKey; }); }
+  function currentStreak(){
+    var weeks = allWeeksDesc(30);
+    var streak = 0;
+    for (var i=1;i<weeks.length;i++){
+      var w = weeks[i];
+      if (!weekHasData(w)) break;
+      if (weekTotal(w) <= weeklyBudget) streak++; else break;
+    }
+    return streak;
+  }
+  function bestStreak(){
+    var weeks = allWeeksDesc(30).slice(1).reverse();
+    var best=0, cur=0;
+    weeks.forEach(function(w){
+      if (!weekHasData(w)){ cur=0; return; }
+      if (weekTotal(w) <= weeklyBudget){ cur++; best = Math.max(best,cur); } else { cur = 0; }
+    });
+    return best;
+  }
+  function bestWeekRecord(){
+    var weeks = allWeeksDesc(30).slice(1).filter(weekHasData);
+    if (!weeks.length) return null;
+    var min = weeks.reduce(function(a,b){ return weekTotal(a) <= weekTotal(b) ? a : b; });
+    return { week: min, total: weekTotal(min) };
+  }
+  function totalSaved(){
+    var weeks = allWeeksDesc(30).slice(1).filter(weekHasData);
+    return weeks.reduce(function(s,w){ return s + (weeklyBudget - weekTotal(w)); }, 0);
+  }
+  function authorBreakdown(weekStart){
+    var map = {};
+    entriesInWeek(weekStart).forEach(function(e){ map[e.who] = (map[e.who]||0) + e.amount; });
+    return map;
+  }
+  function categoryBreakdown(list){
+    return CATEGORIES.map(function(c){
+      var total = list.filter(function(e){ return e.category === c.id; }).reduce(function(s,e){ return s+e.amount; }, 0);
+      return { id:c.id, label:c.label, icon:c.icon, total: total };
+    }).sort(function(a,b){ return b.total - a.total; });
+  }
+  function weekStatus(weekStart){
+    var spent = weekTotal(weekStart);
+    if (weeklyBudget <= 0) return 'good';
+    if (spent > weeklyBudget) return 'critical';
+    if (spent / weeklyBudget >= 0.75) return 'warning';
+    return 'good';
+  }
+  var STATUS_COLOR = { good:'var(--good)', warning:'var(--accent2)', critical:'var(--accent)' };
+  var MASCOT_MSGS = {
+    good: ['이번주 절약 성공각!', '잘하고 있다옹~', '오늘도 알뜰하개!'],
+    warning: ['슬슬 조심해야옹...', '반 넘게 썼다옹!'],
+    critical: ['너무 많이 썼다옹 ㅠㅠ', '다음주엔 아껴보자옹']
+  };
+
+  // ---------- profile ----------
+  function ensureProfile(){
+    if (!profile) profile = promptProfile();
+    renderProfileBadge();
+  }
+  function promptProfile(){
+    var choice = window.prompt('누가 사용 중이신가요? "남편" 또는 "아내"라고 입력해주세요 (다른 이름도 가능해요)', '남편');
+    var val = (choice || '나').trim() || '나';
+    localStorage.setItem('fb_profile', val);
+    return val;
+  }
+  function renderProfileBadge(){
+    var el = document.getElementById('profileBadge');
+    el.hidden = false;
+    el.textContent = profile;
+  }
+
+  // ---------- ui state helpers ----------
+  function showBanner(msg, isErr){
+    var el = document.getElementById('banners');
+    el.innerHTML = '<div class="banner' + (isErr ? ' err' : '') + '">' + escapeHtml(msg) + '</div>';
+    if (!isErr) setTimeout(function(){ if (el.innerHTML.indexOf(escapeHtml(msg)) !== -1) el.innerHTML=''; }, 4000);
+  }
+  function setSaving(v){
+    saving = v;
+    var addBtn = document.getElementById('addBtn');
+    if (addBtn) addBtn.disabled = v;
+  }
+
+  // ---------- actions ----------
+  async function handleAdd(){
+    var amount = parseAmount(document.getElementById('inpAmount').value);
+    var date = document.getElementById('inpDate').value || todayISO();
+    var memo = document.getElementById('inpMemo').value.trim();
+    if (!amount){
+      var inp = document.getElementById('inpAmount');
+      inp.focus(); inp.style.borderColor = 'var(--accent)';
+      setTimeout(function(){ inp.style.borderColor=''; }, 900);
+      return;
+    }
+    setSaving(true);
+    try {
+      var state = await apiPost('add', { date: date, who: profile, amount: amount, memo: memo, category: formCategory });
+      applyState(state);
+      document.getElementById('inpAmount').value = '';
+      document.getElementById('inpMemo').value = '';
+      render();
+    } catch(e){
+      showBanner('저장에 실패했어요: ' + e.message, true);
+    } finally { setSaving(false); }
+  }
+  async function handleDelete(rowNumber){
+    setSaving(true);
+    try {
+      var state = await apiPost('delete', { row: rowNumber });
+      applyState(state);
+      render();
+    } catch(e){
+      showBanner('삭제에 실패했어요: ' + e.message, true);
+    } finally { setSaving(false); }
+  }
+  async function handleSaveBudget(){
+    var val = parseAmount(document.getElementById('inpBudgetEdit').value);
+    if (!val) return;
+    setSaving(true);
+    try {
+      var state = await apiPost('setBudget', { value: val });
+      applyState(state);
+      editingBudget = false;
+      render();
+    } catch(e){
+      showBanner('예산 저장 실패: ' + e.message, true);
+    } finally { setSaving(false); }
+  }
+
+  // ---------- render ----------
+  function render(){
+    renderMascot();
+    renderWeekCard();
+    renderChips();
+    renderEntryList();
+    renderCategoryCard();
+    renderWeekHistory();
+    renderMonthCard();
+    renderStatsCard();
+    paintAllIcons();
+  }
+
+  function renderMascot(){
+    var weekStart = weekStartOf(todayISO());
+    var status = weekStatus(weekStart);
+    var msgs = MASCOT_MSGS[status];
+    var msg = msgs[Math.floor(Math.random()*msgs.length)];
+    document.getElementById('mascotBubble').textContent = msg;
+  }
+
+  function pixelBarHtml(pct, color){
+    var segments = 12;
+    var filled = Math.round((Math.min(100,Math.max(0,pct))/100)*segments);
+    var html = '<div class="pixel-bar">';
+    for (var i=0;i<segments;i++){
+      html += '<div class="pixel-seg' + (i<filled ? ' on' : '') + '"' + (i<filled ? ' style="background:' + color + ';color:' + color + '"' : '') + '></div>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  function renderChips(){
+    var wrap = document.getElementById('catChips');
+    wrap.innerHTML = CATEGORIES.map(function(c){
+      var active = c.id === formCategory ? ' active' : '';
+      return '<button type="button" class="chip' + active + '" data-action="pick-cat" data-cat="' + c.id + '">' +
+        iconTag(c.icon, 16) + c.label + '</button>';
+    }).join('');
+  }
+
+  function renderWeekCard(){
+    var el = document.getElementById('weekCard');
+    var weekStart = weekStartOf(todayISO());
+    var spent = weekTotal(weekStart);
+    var remain = weeklyBudget - spent;
+    var pct = weeklyBudget > 0 ? Math.round((spent/weeklyBudget)*100) : 0;
+    var barPct = weeklyBudget > 0 ? (spent/weeklyBudget)*100 : 0;
+    var status = weekStatus(weekStart);
+    var statusColor = STATUS_COLOR[status];
+    var today = parseISO(todayISO());
+    var daysLeft = 7 - (today.getDay() === 0 ? 7 : today.getDay());
+    daysLeft = Math.max(daysLeft, 0);
+    var perDay = remain > 0 && daysLeft >= 0 ? Math.floor(remain / (daysLeft + 1)) : null;
+
+    var statusText = status === 'critical'
+      ? '목표를 ' + fmtWon(spent - weeklyBudget) + ' 초과했어요'
+      : (status === 'warning' ? '목표의 ' + pct + '%를 썼어요, 조심하세요' : '목표의 ' + pct + '%를 썼어요, 잘하고 있어요');
+
+    var html = '<h2>이번주 <span class="sub">(' + fmtWeekRange(weekStart) + ')</span></h2>';
+    html += '<div class="week-row">';
+    html += '  <div><div class="spent-num" style="color:' + statusColor + '">' + fmtWon(spent) + '</div><div class="spent-sub">목표 ' + fmtWon(weeklyBudget) + '</div></div>';
+    html += '  <div class="remain"><div class="label">' + (remain < 0 ? '초과' : '남은 금액') + '</div><span class="num" style="color:' + (remain < 0 ? 'var(--accent)' : 'var(--text)') + '">' + fmtWon(Math.abs(remain)) + '</span></div>';
+    html += '</div>';
+    html += pixelBarHtml(barPct, statusColor);
+    html += '<div class="status-line"><span class="status-dot" style="background:' + statusColor + ';color:' + statusColor + '"></span>' + escapeHtml(statusText) + '</div>';
+    if (perDay !== null) html += '<div class="pace-line">이번주 남은 ' + (daysLeft+1) + '일 동안 하루 ' + fmtWon(perDay) + '까지 쓰면 목표 달성이에요.</div>';
+
+    if (editingBudget){
+      html += '<div class="budget-edit-row">';
+      html += '  <input type="text" inputmode="numeric" id="inpBudgetEdit" value="' + weeklyBudget + '">';
+      html += '  <button type="button" class="full-btn" style="width:auto;padding:9px 14px;" data-action="save-budget">저장</button>';
+      html += '</div>';
+    } else {
+      html += '<button type="button" class="link-btn" data-action="edit-budget">주간 목표 금액 수정</button>';
+    }
+    el.innerHTML = html;
+  }
+
+  function renderEntryList(){
+    var el = document.getElementById('entryListCard');
+    var weekStart = weekStartOf(todayISO());
+    var list = entriesInWeek(weekStart);
+    var html = '<h2>이번주 내역</h2>';
+    if (!list.length){
+      html += '<div class="empty">아직 이번주 기록이 없어요.</div>';
+    } else {
+      html += list.map(function(e){
+        var c = catOf(e.category);
+        var day = e.date.slice(5,7) + '/' + e.date.slice(8,10);
+        return '<div class="entry">' +
+          iconTag(c.icon, 18) +
+          '<span class="date">' + day + '</span>' +
+          '<div class="meta"><div class="who">' + c.label + ' · <b>' + escapeHtml(e.who) + '</b>' + (e.memo ? ' · ' + escapeHtml(e.memo) : '') + '</div></div>' +
+          '<span class="amount">' + fmtWon(e.amount) + '</span>' +
+          '<button type="button" class="del" data-action="delete-entry" data-row="' + e.row + '" aria-label="삭제">×</button>' +
+          '</div>';
+      }).join('');
+    }
+    el.innerHTML = html;
+  }
+
+  function renderCategoryCard(){
+    var el = document.getElementById('categoryCard');
+    var weekStart = weekStartOf(todayISO());
+    var list = categoryPeriod === 'week' ? entriesInWeek(weekStart) : entriesInMonth(currentMonthKey());
+    var periodLabel = categoryPeriod === 'week' ? '이번주 (' + fmtWeekRange(weekStart) + ')' : '이번달 (' + MONTH_NAMES[parseInt(currentMonthKey().split('-')[1],10)-1] + ')';
+    var totals = categoryBreakdown(list);
+    var sum = totals.reduce(function(s,c){ return s+c.total; }, 0);
+
+    var html = '<h2>카테고리별 분석 <span class="sub">' + periodLabel + '</span></h2>';
+    html += '<div class="seg">';
+    html += '  <button type="button" data-action="cat-period" data-period="week" class="' + (categoryPeriod==='week'?'active':'') + '">이번주</button>';
+    html += '  <button type="button" data-action="cat-period" data-period="month" class="' + (categoryPeriod==='month'?'active':'') + '">이번달</button>';
+    html += '</div>';
+
+    if (sum === 0){
+      html += '<div class="empty">아직 기록이 없어요.</div>';
+    } else {
+      totals.forEach(function(c){
+        if (c.total === 0) return;
+        var pct = sum > 0 ? Math.round((c.total/sum)*100) : 0;
+        var color = ICON_PALETTES[c.icon] ? Object.values(ICON_PALETTES[c.icon])[0] : '#f7b731';
+        html += '<div class="stat-row">';
+        html += '  <div class="stat-label">' + iconTag(c.icon, 16) + c.label + '</div>';
+        html += '  <div class="stat-bar-track"><div class="stat-bar-fill" style="width:' + pct + '%;background:var(--accent2)"></div></div>';
+        html += '  <div class="stat-num">' + fmtWon(c.total) + ' (' + pct + '%)</div>';
+        html += '</div>';
+      });
+    }
+    el.innerHTML = html;
+  }
+
+  function renderWeekHistory(){
+    var el = document.getElementById('weekHistoryCard');
+    var weeks = allWeeksDesc(9);
+    var past = weeks.slice(1);
+    var maxAmt = Math.max.apply(null, past.map(weekTotal).concat([weeklyBudget, 1]));
+    var streak = currentStreak();
+    var best = bestStreak();
+
+    var html = '<h2>지난 8주 기록</h2>';
+    html += '<div class="streak-row">';
+    html += '  <div class="streak-box"><div class="num">' + streak + '주</div><div class="label">연속 목표 달성</div></div>';
+    html += '  <div class="streak-box"><div class="num">' + best + '주</div><div class="label">최고 기록</div></div>';
+    html += '</div>';
+
+    var shown = past.filter(weekHasData);
+    if (!shown.length){
+      html += '<div class="empty">아직 지난 기록이 없어요.</div>';
+    } else {
+      shown.forEach(function(w){
+        var total = weekTotal(w);
+        var ok = total <= weeklyBudget;
+        var pct = Math.min(100, (total / maxAmt) * 100);
+        html += '<div class="whist-row">';
+        html += '  <div class="whist-range">' + fmtWeekRange(w) + '</div>';
+        html += '  <div class="whist-bar-track"><div class="whist-bar-fill" style="width:' + pct + '%;background:' + (ok ? 'var(--good)' : 'var(--accent)') + '"></div></div>';
+        html += '  <div class="whist-amt">' + fmtWon(total) + '</div>';
+        html += '  <span class="badge ' + (ok ? 'good' : 'bad') + '">' + (ok ? '달성' : '초과') + '</span>';
+        html += '</div>';
+      });
+    }
+    el.innerHTML = html;
+  }
+
+  function renderMonthCard(){
+    var el = document.getElementById('monthCard');
+    var months = lastNMonths(6);
+    var totals = months.map(function(m){ return { month:m, total: monthTotal(m) }; });
+    var max = Math.max.apply(null, totals.map(function(t){return t.total;}).concat([1]));
+
+    var html = '<h2>월별 지출 비교</h2>';
+    html += '<div class="history-chart">';
+    totals.forEach(function(t){
+      var h = Math.round((t.total / max) * 100);
+      var m = parseInt(t.month.split('-')[1],10);
+      html += '<div class="history-col">';
+      html += '  <div class="history-amt">' + (t.total > 0 ? Math.round(t.total/10000) + '만' : '') + '</div>';
+      html += '  <div class="history-bar-wrap"><div class="history-bar" style="height:' + Math.max(h,2) + '%"></div></div>';
+      html += '  <div class="history-label">' + MONTH_NAMES[m-1] + '</div>';
+      html += '</div>';
+    });
+    html += '</div>';
+
+    var curM = totals[totals.length-1], prevM = totals[totals.length-2];
+    if (curM && prevM && prevM.total > 0){
+      var diff = curM.total - prevM.total;
+      var pctDiff = Math.round((diff / prevM.total) * 100);
+      if (diff <= 0){
+        html += '<div class="month-compare">이번 달은 지난달보다 <b>' + fmtWon(Math.abs(diff)) + '</b> 줄였어요 (' + Math.abs(pctDiff) + '% 감소).</div>';
+      } else {
+        html += '<div class="month-compare">이번 달은 지난달보다 <b>' + fmtWon(diff) + '</b> 더 썼어요 (' + pctDiff + '% 증가).</div>';
+      }
+    }
+    el.innerHTML = html;
+  }
+
+  function renderStatsCard(){
+    var el = document.getElementById('statsCard');
+    var saved = totalSaved();
+    var record = bestWeekRecord();
+    var weekStart = weekStartOf(todayISO());
+    var split = authorBreakdown(weekStart);
+    var names = Object.keys(split);
+    var sum = names.reduce(function(s,n){ return s + split[n]; }, 0);
+    var catTotals = categoryBreakdown(entriesInWeek(weekStart)).filter(function(c){ return c.total>0; });
+
+    var html = '<h2>종합 통계</h2>';
+    html += '<div class="stat-line"><span class="k">전체 누적 절약액</span><span class="v" style="color:' + (saved >= 0 ? 'var(--good)' : 'var(--accent)') + '">' + (saved >= 0 ? '+' : '-') + fmtWon(Math.abs(saved)) + '</span></div>';
+    if (record){
+      html += '<div class="stat-line"><span class="k">최저 지출 주 기록</span><span class="v">' + fmtWeekRange(record.week) + ' · ' + fmtWon(record.total) + '</span></div>';
+    }
+    if (catTotals.length){
+      html += '<div class="stat-line"><span class="k">이번주 최다 지출 카테고리</span><span class="v">' + catTotals[0].label + ' · ' + fmtWon(catTotals[0].total) + '</span></div>';
+    }
+    el.innerHTML = html;
+
+    if (names.length){
+      var legend = names.map(function(n){
+        var pct = sum > 0 ? Math.round((split[n]/sum)*100) : 0;
+        return '<span>' + escapeHtml(n) + ' ' + pct + '%</span>';
+      }).join('');
+      var bar = names.map(function(n){
+        var pct = sum > 0 ? (split[n]/sum)*100 : 0;
+        return '<div style="width:' + pct + '%"></div>';
+      }).join('');
+      el.innerHTML += '<div style="margin-top:10px;"><div class="k" style="font-size:11.5px;color:var(--text2);margin-bottom:2px;">이번주 입력 비중</div><div class="split-bar">' + bar + '</div><div class="split-legend">' + legend + '</div></div>';
+    }
+  }
+
+  // ---------- init / lifecycle ----------
+  function spawnStars(){
+    var wrap = document.getElementById('stars');
+    var html = '';
+    for (var i=0;i<50;i++){
+      var top = Math.random()*100, left = Math.random()*100, dur = (2+Math.random()*3).toFixed(1);
+      html += '<div class="star" style="top:' + top + '%;left:' + left + '%;--dur:' + dur + 's"></div>';
+    }
+    wrap.innerHTML = html;
+  }
+
+  async function init(){
+    spawnStars();
+    ensureProfile();
+    document.getElementById('inpDate').value = todayISO();
+    renderChips();
+    paintAllIcons();
+    drawPixelCat(document.getElementById('dendeCanvas'), 'dende', 4);
+    drawPixelCat(document.getElementById('booCanvas'), 'boo', 4);
+    try {
+      var state = await apiGet('state');
+      applyState(state);
+      document.getElementById('loadingScreen').hidden = true;
+      document.getElementById('mainScreen').hidden = false;
+      render();
+      startAutoRefresh();
+    } catch(e){
+      document.getElementById('loadingScreen').innerHTML =
+        '<div class="banner err" style="text-align:left;">불러오는 데 실패했어요: ' + escapeHtml(e.message) +
+        '<br><br>index.html 상단의 APPS_SCRIPT_URL이 올바르게 설정되어 있는지 확인해주세요.</div>';
+    }
+  }
+  function startAutoRefresh(){
+    if (refreshTimer) clearInterval(refreshTimer);
+    refreshTimer = setInterval(function(){
+      apiGet('state').then(function(state){ applyState(state); render(); }).catch(function(){});
+    }, 45000);
+  }
+
+  document.getElementById('app').addEventListener('click', function(ev){
+    var t = ev.target.closest('[data-action]');
+    if (!t) return;
+    var action = t.dataset.action;
+    if (action === 'add-expense') handleAdd();
+    else if (action === 'delete-entry') handleDelete(Number(t.dataset.row));
+    else if (action === 'edit-budget'){ editingBudget = true; renderWeekCard(); var i=document.getElementById('inpBudgetEdit'); if(i){ i.focus(); i.select(); } }
+    else if (action === 'save-budget') handleSaveBudget();
+    else if (action === 'change-profile'){ profile = promptProfile(); renderProfileBadge(); render(); }
+    else if (action === 'pick-cat'){ formCategory = t.dataset.cat; renderChips(); paintAllIcons(); }
+    else if (action === 'cat-period'){ categoryPeriod = t.dataset.period; renderCategoryCard(); paintAllIcons(); }
+    else if (action === 'refresh'){ apiGet('state').then(function(state){ applyState(state); render(); }).catch(function(e){ showBanner('새로고침 실패: ' + e.message, true); }); }
+  });
+
+  document.getElementById('inpAmount').addEventListener('input', function(ev){
+    var raw = parseAmount(ev.target.value);
+    ev.target.value = raw ? raw.toLocaleString('ko-KR') : '';
+  });
+  document.addEventListener('keydown', function(ev){
+    if (ev.key !== 'Enter') return;
+    var a = document.activeElement;
+    if (!a) return;
+    if (a.id === 'inpBudgetEdit') handleSaveBudget();
+    else if (a.id === 'inpAmount' || a.id === 'inpMemo' || a.id === 'inpDate') handleAdd();
+  });
+
+  init();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>우리집 체중 기록</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.1/chart.umd.min.js"></script>
+<style>
+  /* ============================================================
+     설정(CONFIG)은 이 파일 맨 아래 <script> 태그 상단에 있습니다.
+     - APPS_SCRIPT_URL : Apps Script 웹앱 배포 URL
+     - USERS           : 두 사람 이름/색상
+     ============================================================ */
+  :root{
+    --bg:#FAFAF7;
+    --card:#FFFFFF;
+    --ink:#2B2B2B;
+    --sub:#8A8A85;
+    --line:#ECECE6;
+    --accent:#2BB3A3;
+    --accent-2:#FF7A66;
+    --shadow: 0 2px 12px rgba(0,0,0,0.06);
+    --radius: 18px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Pretendard Variable','Pretendard',-apple-system,BlinkMacSystemFont,'Malgun Gothic',sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    -webkit-tap-highlight-color:transparent;
+  }
+  .app{
+    max-width:480px;
+    margin:0 auto;
+    min-height:100vh;
+    padding-bottom:88px;
+    position:relative;
+  }
+  header.top{
+    padding:22px 20px 10px;
+  }
+  header.top h1{
+    font-size:20px;
+    margin:0 0 2px;
+    font-weight:800;
+  }
+  header.top p{
+    margin:0;
+    font-size:13px;
+    color:var(--sub);
+  }
+  .banner{
+    margin:0 20px 12px;
+    padding:14px 16px;
+    background:#FFF4E5;
+    border:1px solid #FFDDA8;
+    border-radius:14px;
+    font-size:13px;
+    line-height:1.5;
+    color:#8a5a00;
+    display:none;
+  }
+  .banner.show{display:block;}
+  section.tab{
+    padding:0 20px 20px;
+    display:none;
+  }
+  section.tab.active{display:block;}
+
+  .card{
+    background:var(--card);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:18px;
+    margin-bottom:16px;
+  }
+  .card h2{
+    font-size:15px;
+    margin:0 0 12px;
+    font-weight:700;
+  }
+
+  /* 사용자 선택 토글 */
+  .user-toggle{
+    display:flex;
+    gap:8px;
+    margin-bottom:14px;
+  }
+  .user-toggle button{
+    flex:1;
+    padding:12px 0;
+    border-radius:14px;
+    border:2px solid var(--line);
+    background:#fff;
+    font-size:14px;
+    font-weight:700;
+    color:var(--sub);
+    cursor:pointer;
+    transition:.15s;
+  }
+  .user-toggle button.active{
+    color:#fff;
+    border-color:transparent;
+  }
+
+  label.field{
+    display:block;
+    font-size:13px;
+    font-weight:600;
+    color:var(--sub);
+    margin:14px 0 6px;
+  }
+  input[type=date], input[type=number], input[type=text]{
+    width:100%;
+    padding:12px 14px;
+    border:1.5px solid var(--line);
+    border-radius:12px;
+    font-size:15px;
+    font-family:inherit;
+    background:#fff;
+    color:var(--ink);
+  }
+  input:focus{outline:none;border-color:var(--accent);}
+
+  .photo-input{
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .photo-input label.upload-btn{
+    flex-shrink:0;
+    width:74px;height:74px;
+    border-radius:14px;
+    border:1.5px dashed var(--line);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:24px;
+    color:var(--sub);
+    cursor:pointer;
+    background:#fbfbf9;
+    overflow:hidden;
+  }
+  .photo-input label.upload-btn img{width:100%;height:100%;object-fit:cover;}
+  .photo-input input[type=file]{display:none;}
+  .photo-hint{font-size:12px;color:var(--sub);}
+
+  button.primary{
+    width:100%;
+    margin-top:18px;
+    padding:15px 0;
+    border:none;
+    border-radius:14px;
+    background:var(--accent);
+    color:#fff;
+    font-size:15px;
+    font-weight:800;
+    cursor:pointer;
+  }
+  button.primary:disabled{background:#cfd8d6;cursor:not-allowed;}
+  button.primary:active{transform:scale(.98);}
+
+  .week-status{
+    display:flex;
+    gap:10px;
+  }
+  .week-chip{
+    flex:1;
+    padding:10px 12px;
+    border-radius:12px;
+    background:#F5F5F0;
+    font-size:12.5px;
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+  }
+  .week-chip .name{font-weight:700;font-size:13px;}
+  .week-chip .status{color:var(--sub);}
+  .week-chip.done{background:#E8F7F3;}
+  .week-chip.done .status{color:var(--accent);font-weight:700;}
+
+  /* 통계 탭 */
+  .seg{
+    display:flex;
+    gap:6px;
+    background:#F0F0EA;
+    padding:4px;
+    border-radius:12px;
+    margin-bottom:12px;
+  }
+  .seg button{
+    flex:1;
+    padding:9px 0;
+    border:none;
+    background:transparent;
+    border-radius:9px;
+    font-size:13px;
+    font-weight:700;
+    color:var(--sub);
+    cursor:pointer;
+  }
+  .seg button.active{background:#fff;color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.08);}
+
+  .chips{display:flex;gap:8px;overflow-x:auto;margin-bottom:14px;padding-bottom:2px;}
+  .chip{
+    flex-shrink:0;
+    padding:7px 14px;
+    border-radius:999px;
+    background:#F5F5F0;
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--sub);
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .chip.active{background:var(--ink);color:#fff;}
+
+  .stat-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-bottom:16px;
+  }
+  .stat-box{
+    background:#F8F8F4;
+    border-radius:14px;
+    padding:14px;
+  }
+  .stat-box .label{font-size:12px;color:var(--sub);margin-bottom:4px;}
+  .stat-box .value{font-size:19px;font-weight:800;}
+  .stat-box .value small{font-size:12px;font-weight:600;margin-left:2px;color:var(--sub);}
+  .diff-up{color:var(--accent-2);}
+  .diff-down{color:var(--accent);}
+
+  canvas#weightChart{width:100%!important;max-height:260px;}
+
+  .recent-list{margin-top:4px;}
+  .recent-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:10px 0;
+    border-bottom:1px solid var(--line);
+    font-size:13.5px;
+  }
+  .recent-row:last-child{border-bottom:none;}
+  .recent-row .d{color:var(--sub);}
+  .recent-row .u{font-weight:700;margin-left:6px;}
+  .recent-row .w{font-weight:800;}
+
+  /* 사진 탭 */
+  .photo-main{
+    position:relative;
+    width:100%;
+    aspect-ratio:3/4;
+    border-radius:18px;
+    overflow:hidden;
+    background:#eee;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .photo-main img{width:100%;height:100%;object-fit:cover;}
+  .photo-main .empty{color:var(--sub);font-size:13px;text-align:center;padding:20px;}
+  .photo-caption{
+    position:absolute;
+    left:0;right:0;bottom:0;
+    padding:14px 16px 12px;
+    background:linear-gradient(transparent, rgba(0,0,0,.65));
+    color:#fff;
+  }
+  .photo-caption .date{font-size:12px;opacity:.85;}
+  .photo-caption .weight{font-size:20px;font-weight:800;}
+  .photo-caption .diff{font-size:12px;opacity:.9;margin-left:6px;}
+
+  .photo-controls{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-top:14px;
+  }
+  .photo-controls button{
+    width:44px;height:44px;
+    border-radius:50%;
+    border:none;
+    background:#F0F0EA;
+    font-size:16px;
+    cursor:pointer;
+  }
+  .photo-controls button.play{background:var(--accent);color:#fff;font-size:18px;}
+  .photo-controls input[type=range]{flex:1;}
+
+  .filmstrip{
+    display:flex;
+    gap:8px;
+    overflow-x:auto;
+    margin-top:14px;
+    padding-bottom:4px;
+  }
+  .filmstrip img{
+    width:52px;height:52px;
+    object-fit:cover;
+    border-radius:10px;
+    flex-shrink:0;
+    opacity:.55;
+    border:2px solid transparent;
+    cursor:pointer;
+  }
+  .filmstrip img.active{opacity:1;border-color:var(--accent);}
+
+  .compare-wrap{
+    position:relative;
+    width:100%;
+    aspect-ratio:3/4;
+    border-radius:18px;
+    overflow:hidden;
+    background:#eee;
+    margin-top:14px;
+    user-select:none;
+  }
+  .compare-wrap img{
+    position:absolute;top:0;left:0;
+    width:100%;height:100%;
+    object-fit:cover;
+  }
+  .compare-wrap .after-clip{
+    position:absolute;top:0;left:0;
+    width:100%;height:100%;
+    overflow:hidden;
+  }
+  .compare-handle{
+    position:absolute;top:0;bottom:0;
+    width:3px;background:#fff;
+    left:50%;
+    transform:translateX(-50%);
+    cursor:ew-resize;
+  }
+  .compare-handle::after{
+    content:'⇔';
+    position:absolute;
+    top:50%;left:50%;
+    transform:translate(-50%,-50%);
+    width:34px;height:34px;
+    background:#fff;
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:15px;
+    color:var(--ink);
+    box-shadow:0 2px 6px rgba(0,0,0,.25);
+  }
+  .compare-label{
+    position:absolute;
+    bottom:10px;
+    padding:4px 10px;
+    background:rgba(0,0,0,.55);
+    color:#fff;
+    font-size:11px;
+    border-radius:8px;
+  }
+  .compare-label.left{left:10px;}
+  .compare-label.right{right:10px;}
+  .compare-select{
+    display:flex;
+    gap:8px;
+    margin-top:12px;
+  }
+  .compare-select select{
+    flex:1;
+    padding:10px;
+    border-radius:10px;
+    border:1.5px solid var(--line);
+    font-size:13px;
+    background:#fff;
+  }
+
+  /* 하단 탭바 */
+  nav.tabbar{
+    position:fixed;
+    left:50%;
+    transform:translateX(-50%);
+    bottom:0;
+    width:100%;
+    max-width:480px;
+    background:#fff;
+    border-top:1px solid var(--line);
+    display:flex;
+    padding:8px 0 max(8px, env(safe-area-inset-bottom));
+  }
+  nav.tabbar button{
+    flex:1;
+    background:none;
+    border:none;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:3px;
+    font-size:11px;
+    color:var(--sub);
+    font-weight:600;
+    cursor:pointer;
+    padding:4px 0;
+    font-family:inherit;
+  }
+  nav.tabbar button .icon{font-size:19px;}
+  nav.tabbar button.active{color:var(--accent);}
+
+  .toast{
+    position:fixed;
+    left:50%;
+    bottom:96px;
+    transform:translateX(-50%);
+    background:#2B2B2B;
+    color:#fff;
+    padding:11px 20px;
+    border-radius:999px;
+    font-size:13px;
+    opacity:0;
+    pointer-events:none;
+    transition:.25s;
+    z-index:50;
+    white-space:nowrap;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(-6px);}
+
+  .footer-credit{
+    text-align:center;
+    font-size:11px;
+    color:#c7c7c0;
+    padding:6px 0 20px;
+  }
+
+  .loading-spin{
+    display:inline-block;
+    width:14px;height:14px;
+    border:2px solid #fff;
+    border-top-color:transparent;
+    border-radius:50%;
+    animation:spin .7s linear infinite;
+    vertical-align:middle;
+    margin-right:6px;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .refresh-row{
+    display:flex;
+    justify-content:flex-end;
+    margin:-4px 0 8px;
+  }
+  .refresh-row button{
+    border:none;background:none;color:var(--sub);font-size:12px;cursor:pointer;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="top">
+    <h1>🏠 우리집 체중 기록</h1>
+    <p id="headerSub">매주 한 번, 서로의 변화를 함께 기록해요</p>
+  </header>
+
+  <div class="banner" id="setupBanner">
+    ⚙️ 설정이 필요합니다. index.html 파일 맨 아래 CONFIG 부분의
+    <b>APPS_SCRIPT_URL</b> 값을 배포한 Apps Script 웹앱 주소로 바꿔주세요.
+  </div>
+
+  <!-- ===================== 기록 탭 ===================== -->
+  <section class="tab active" id="tab-record">
+    <div class="card">
+      <h2>이번 주 기록 현황</h2>
+      <div class="week-status" id="weekStatus"></div>
+    </div>
+
+    <div class="card">
+      <h2>체중 기록하기</h2>
+      <div class="user-toggle" id="recordUserToggle"></div>
+
+      <label class="field">날짜</label>
+      <input type="date" id="inputDate">
+
+      <label class="field">체중 (kg)</label>
+      <input type="number" id="inputWeight" step="0.1" min="0" placeholder="예: 68.5" inputmode="decimal">
+
+      <label class="field">사진 (선택)</label>
+      <div class="photo-input">
+        <label class="upload-btn" id="uploadBtn">
+          📷
+          <input type="file" accept="image/*" id="inputPhoto">
+        </label>
+        <div class="photo-hint">몸 사진을 등록하면<br>변화 타임랩스에 사용돼요</div>
+      </div>
+
+      <label class="field">메모 (선택)</label>
+      <input type="text" id="inputMemo" placeholder="컨디션, 특이사항 등">
+
+      <button class="primary" id="submitBtn">기록 저장</button>
+    </div>
+  </section>
+
+  <!-- ===================== 통계 탭 ===================== -->
+  <section class="tab" id="tab-stats">
+    <div class="card">
+      <div class="seg" id="statsUserSeg"></div>
+      <div class="chips" id="statsPeriodChips"></div>
+
+      <div class="stat-grid" id="statGrid"></div>
+
+      <canvas id="weightChart" height="180"></canvas>
+    </div>
+
+    <div class="card">
+      <h2>최근 기록</h2>
+      <div class="recent-list" id="recentList"></div>
+    </div>
+  </section>
+
+  <!-- ===================== 사진 탭 ===================== -->
+  <section class="tab" id="tab-photos">
+    <div class="card">
+      <div class="seg" id="photoUserSeg"></div>
+
+      <div class="photo-main" id="photoMain">
+        <div class="empty">아직 등록된 사진이 없어요</div>
+      </div>
+
+      <div class="photo-controls">
+        <button id="photoPrev">◀</button>
+        <button class="play" id="photoPlay">▶</button>
+        <input type="range" id="photoSlider" min="0" max="0" value="0">
+        <button id="photoNext">▶</button>
+      </div>
+
+      <div class="filmstrip" id="filmstrip"></div>
+    </div>
+
+    <div class="card">
+      <h2>비교 (Before / After)</h2>
+      <div class="compare-wrap" id="compareWrap">
+        <div class="empty" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--sub);font-size:13px;">사진이 2장 이상 필요해요</div>
+      </div>
+      <div class="compare-select">
+        <select id="compareBefore"></select>
+        <select id="compareAfter"></select>
+      </div>
+    </div>
+  </section>
+
+  <nav class="tabbar">
+    <button data-tab="record" class="active"><span class="icon">📝</span>기록</button>
+    <button data-tab="stats"><span class="icon">📈</span>통계</button>
+    <button data-tab="photos"><span class="icon">🖼️</span>사진</button>
+  </nav>
+
+  <div class="toast" id="toast"></div>
+  <div class="footer-credit">Developed by Donggu Kang</div>
+</div>
+
+<script>
+/* ================================================================
+   CONFIG — 여기만 수정하면 됩니다
+   ================================================================ */
+const CONFIG = {
+  // 1) Apps Script를 "웹 앱"으로 배포한 뒤 나온 URL을 여기에 붙여넣으세요.
+  //    (배포 방법은 README.md 참고)
+  APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbyMMW-HAQRmkE_sHOLT_XGXhdq71CTbQYrf0wA6_UvBdmKzWiC9Y1JbcTZbTGXKSlPCTA/exec',
+
+  // 2) 두 사람의 이름과 그래프/포인트에 쓰일 색상을 정해주세요.
+  USERS: [
+    { id: 'u1', name: '동구', color: '#2BB3A3' },
+    { id: 'u2', name: '아내', color: '#FF7A66' }
+  ]
+};
+/* ================================================================ */
+
+const state = {
+  records: [],
+  loaded: false,
+  recordUser: CONFIG.USERS[0].id,
+  statsUser: 'all',
+  statsPeriod: 'all',
+  photoUser: CONFIG.USERS[0].id,
+  photoIndex: 0,
+  isPlaying: false,
+  playTimer: null,
+  pendingPhotoBase64: null,
+  pendingPhotoMime: null
+};
+
+const isConfigured = () => CONFIG.APPS_SCRIPT_URL && CONFIG.APPS_SCRIPT_URL !== 'YOUR_APPS_SCRIPT_URL_HERE';
+
+function userById(id){ return CONFIG.USERS.find(u => u.id === id) || CONFIG.USERS[0]; }
+function userByName(name){ return CONFIG.USERS.find(u => u.name === name); }
+
+/* ---------------- JSONP (읽기) ---------------- */
+let jsonpCounter = 0;
+function jsonp(url){
+  return new Promise((resolve, reject) => {
+    const cbName = 'jsonp_cb_' + (jsonpCounter++) + '_' + Date.now();
+    const script = document.createElement('script');
+    const timer = setTimeout(() => { cleanup(); reject(new Error('timeout')); }, 15000);
+    function cleanup(){ clearTimeout(timer); delete window[cbName]; script.remove(); }
+    window[cbName] = (data) => { cleanup(); resolve(data); };
+    script.onerror = () => { cleanup(); reject(new Error('network error')); };
+    const sep = url.includes('?') ? '&' : '?';
+    script.src = url + sep + 'callback=' + cbName + '&_=' + Date.now();
+    document.body.appendChild(script);
+  });
+}
+
+/* ---------------- 데이터 로드 ---------------- */
+async function loadRecords(){
+  if (!isConfigured()) return;
+  try{
+    const res = await jsonp(CONFIG.APPS_SCRIPT_URL);
+    if (res && res.ok){
+      state.records = (res.records || [])
+        .filter(r => r.date && !isNaN(Number(r.weight)))
+        .map(r => ({
+          date: r.date,
+          user: userByName(r.user) ? r.user : r.user, // 이름 그대로 저장
+          userId: (userByName(r.user) || {}).id || null,
+          weight: Number(r.weight),
+          photoUrl: r.photoUrl || '',
+          memo: r.memo || ''
+        }))
+        .sort((a,b) => a.date.localeCompare(b.date));
+      state.loaded = true;
+    }
+  }catch(err){
+    console.error('로드 실패', err);
+    showToast('데이터를 불러오지 못했어요');
+  }
+  renderAll();
+}
+
+/* ---------------- 이미지 리사이즈 ---------------- */
+function resizeImageToBase64(file, maxWidth = 1080, quality = 0.82){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxWidth){
+          height = Math.round(height * (maxWidth / width));
+          width = maxWidth;
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width; canvas.height = height;
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+        resolve(dataUrl.split(',')[1]);
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+/* ---------------- 저장(쓰기) ---------------- */
+async function submitRecord(){
+  const user = userById(state.recordUser);
+  const date = document.getElementById('inputDate').value;
+  const weight = document.getElementById('inputWeight').value;
+
+  if (!date){ showToast('날짜를 선택해주세요'); return; }
+  if (!weight || isNaN(Number(weight))){ showToast('체중을 입력해주세요'); return; }
+  if (!isConfigured()){ showToast('먼저 설정을 완료해주세요'); return; }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading-spin"></span>저장 중...';
+
+  const payload = {
+    date, user: user.name, weight: Number(weight),
+    memo: document.getElementById('inputMemo').value || '',
+    photoBase64: state.pendingPhotoBase64 || '',
+    photoMime: state.pendingPhotoMime || ''
+  };
+
+  try{
+    await fetch(CONFIG.APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    });
+
+    // 낙관적 업데이트 (no-cors라 응답을 읽을 수 없으므로 로컬에 바로 반영)
+    state.records.push({
+      date, user: user.name, userId: user.id, weight: Number(weight),
+      photoUrl: payload.photoBase64 ? 'data:image/jpeg;base64,' + payload.photoBase64 : '',
+      memo: payload.memo
+    });
+    state.records.sort((a,b) => a.date.localeCompare(b.date));
+
+    showToast('기록되었어요 🎉');
+    document.getElementById('inputWeight').value = '';
+    document.getElementById('inputMemo').value = '';
+    document.getElementById('inputDate').value = todayStr();
+    state.pendingPhotoBase64 = null;
+    state.pendingPhotoMime = null;
+    document.getElementById('uploadBtn').innerHTML = '📷<input type="file" accept="image/*" id="inputPhoto">';
+    bindPhotoInput();
+    renderAll();
+
+    // 서버 반영을 위해 잠시 후 실제 데이터 재조회
+    setTimeout(loadRecords, 2500);
+  }catch(err){
+    console.error(err);
+    showToast('저장에 실패했어요. 다시 시도해주세요');
+  }finally{
+    btn.disabled = false;
+    btn.textContent = '기록 저장';
+  }
+}
+
+/* ---------------- 유틸 ---------------- */
+function todayStr(){
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function mondayOf(dateStr){
+  const d = new Date(dateStr + 'T00:00:00');
+  const day = (d.getDay() + 6) % 7; // 월=0
+  d.setDate(d.getDate() - day);
+  return d;
+}
+function recordsFor(userId){
+  const name = userById(userId).name;
+  return state.records.filter(r => r.user === name);
+}
+function fmtDate(dateStr){
+  const [y,m,d] = dateStr.split('-');
+  return `${Number(m)}.${Number(d)}`;
+}
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(showToast._timer);
+  showToast._timer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+function linearTrend(points){
+  // points: [{x:index, y:weight}]
+  const n = points.length;
+  if (n < 2) return null;
+  const sumX = points.reduce((s,p)=>s+p.x,0);
+  const sumY = points.reduce((s,p)=>s+p.y,0);
+  const sumXY = points.reduce((s,p)=>s+p.x*p.y,0);
+  const sumXX = points.reduce((s,p)=>s+p.x*p.x,0);
+  const denom = (n*sumXX - sumX*sumX);
+  if (denom === 0) return null;
+  const slope = (n*sumXY - sumX*sumY) / denom;
+  const intercept = (sumY - slope*sumX) / n;
+  return { slope, intercept };
+}
+
+/* ---------------- 렌더: 공통 UI 초기화 ---------------- */
+function initToggles(){
+  const rt = document.getElementById('recordUserToggle');
+  rt.innerHTML = CONFIG.USERS.map(u =>
+    `<button data-id="${u.id}" style="--c:${u.color}">${u.name}</button>`
+  ).join('');
+  rt.querySelectorAll('button').forEach(btn => {
+    btn.onclick = () => { state.recordUser = btn.dataset.id; renderRecordTab(); };
+  });
+
+  const statsSeg = document.getElementById('statsUserSeg');
+  statsSeg.innerHTML = ['all', ...CONFIG.USERS.map(u=>u.id)].map(id => {
+    const label = id === 'all' ? '함께 보기' : userById(id).name;
+    return `<button data-id="${id}">${label}</button>`;
+  }).join('');
+  statsSeg.querySelectorAll('button').forEach(btn => {
+    btn.onclick = () => { state.statsUser = btn.dataset.id; renderStatsTab(); };
+  });
+
+  const periodChips = document.getElementById('statsPeriodChips');
+  const periods = [['all','전체'],['90','3개월'],['180','6개월'],['365','1년']];
+  periodChips.innerHTML = periods.map(([id,label]) => `<div class="chip" data-id="${id}">${label}</div>`).join('');
+  periodChips.querySelectorAll('.chip').forEach(chip => {
+    chip.onclick = () => { state.statsPeriod = chip.dataset.id; renderStatsTab(); };
+  });
+
+  const photoSeg = document.getElementById('photoUserSeg');
+  photoSeg.innerHTML = CONFIG.USERS.map(u => `<button data-id="${u.id}">${u.name}</button>`).join('');
+  photoSeg.querySelectorAll('button').forEach(btn => {
+    btn.onclick = () => { state.photoUser = btn.dataset.id; state.photoIndex = 0; stopPlay(); renderPhotoTab(); };
+  });
+
+  document.getElementById('inputDate').value = todayStr();
+}
+
+function paintActiveStates(){
+  document.querySelectorAll('#recordUserToggle button').forEach(b => {
+    const active = b.dataset.id === state.recordUser;
+    b.classList.toggle('active', active);
+    b.style.background = active ? b.style.getPropertyValue('--c') : '';
+    b.style.borderColor = active ? b.style.getPropertyValue('--c') : '';
+  });
+  document.querySelectorAll('#statsUserSeg button').forEach(b => b.classList.toggle('active', b.dataset.id === state.statsUser));
+  document.querySelectorAll('#statsPeriodChips .chip').forEach(c => c.classList.toggle('active', c.dataset.id === state.statsPeriod));
+  document.querySelectorAll('#photoUserSeg button').forEach(b => b.classList.toggle('active', b.dataset.id === state.photoUser));
+}
+
+/* ---------------- 렌더: 기록 탭 ---------------- */
+function renderRecordTab(){
+  paintActiveStates();
+  const wk = mondayOf(todayStr());
+  const wkStr = wk.getFullYear()+'-'+String(wk.getMonth()+1).padStart(2,'0')+'-'+String(wk.getDate()).padStart(2,'0');
+
+  document.getElementById('weekStatus').innerHTML = CONFIG.USERS.map(u => {
+    const recs = recordsFor(u.id);
+    const latest = recs[recs.length-1];
+    const done = latest && latest.date >= wkStr;
+    return `<div class="week-chip ${done?'done':''}">
+      <div class="name">${u.name}</div>
+      <div class="status">${done ? '이번 주 완료 ✓' : (latest ? `마지막 ${fmtDate(latest.date)}` : '기록 없음')}</div>
+    </div>`;
+  }).join('');
+}
+
+function bindPhotoInput(){
+  const input = document.getElementById('inputPhoto');
+  const btn = document.getElementById('uploadBtn');
+  input.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const base64 = await resizeImageToBase64(file);
+    state.pendingPhotoBase64 = base64;
+    state.pendingPhotoMime = 'image/jpeg';
+    btn.innerHTML = `<img src="data:image/jpeg;base64,${base64}"><input type="file" accept="image/*" id="inputPhoto">`;
+    bindPhotoInput();
+  });
+}
+
+/* ---------------- 렌더: 통계 탭 ---------------- */
+let chartInstance = null;
+function renderStatsTab(){
+  paintActiveStates();
+
+  const cutoffDays = state.statsPeriod === 'all' ? null : Number(state.statsPeriod);
+  const cutoffDate = cutoffDays ? new Date(Date.now() - cutoffDays*86400000) : null;
+
+  const usersToShow = state.statsUser === 'all' ? CONFIG.USERS : [userById(state.statsUser)];
+
+  const datasets = usersToShow.map(u => {
+    let recs = recordsFor(u.id);
+    if (cutoffDate) recs = recs.filter(r => new Date(r.date) >= cutoffDate);
+    return { user: u, recs };
+  });
+
+  // ---- 통계 카드 (단일 사용자 선택시에만 상세 표시, 함께보기면 첫번째 사용자 기준 요약 두 세트) ----
+  const statGrid = document.getElementById('statGrid');
+  statGrid.innerHTML = datasets.map(({user, recs}) => {
+    if (recs.length === 0){
+      return `<div class="stat-box" style="grid-column: span 2;">
+        <div class="label">${user.name}</div>
+        <div class="value" style="font-size:13px;color:var(--sub);font-weight:600;">아직 기록이 없어요</div>
+      </div>`;
+    }
+    const first = recs[0], last = recs[recs.length-1];
+    const prev = recs.length > 1 ? recs[recs.length-2] : null;
+    const totalDiff = last.weight - first.weight;
+    const lastDiff = prev ? last.weight - prev.weight : null;
+
+    const dayPoints = recs.map(r => ({x: (new Date(r.date) - new Date(first.date))/86400000, y: r.weight}));
+    const dayTrend = linearTrend(dayPoints);
+    const weeklyRateClean = dayTrend ? dayTrend.slope * 7 : null;
+
+    const diffClass = (v) => v > 0 ? 'diff-up' : (v < 0 ? 'diff-down' : '');
+    const sign = (v) => v > 0 ? '+' : '';
+
+    return `
+      <div class="stat-box">
+        <div class="label">${user.name} · 현재</div>
+        <div class="value">${last.weight}<small>kg</small></div>
+      </div>
+      <div class="stat-box">
+        <div class="label">지난 기록 대비</div>
+        <div class="value ${lastDiff!=null?diffClass(lastDiff):''}">${lastDiff!=null? sign(lastDiff)+lastDiff.toFixed(1) : '-'}<small>kg</small></div>
+      </div>
+      <div class="stat-box">
+        <div class="label">시작 대비 (${fmtDate(first.date)}~)</div>
+        <div class="value ${diffClass(totalDiff)}">${sign(totalDiff)}${totalDiff.toFixed(1)}<small>kg</small></div>
+      </div>
+      <div class="stat-box">
+        <div class="label">주간 평균 변화</div>
+        <div class="value ${weeklyRateClean!=null?diffClass(weeklyRateClean):''}">${weeklyRateClean!=null? sign(weeklyRateClean)+weeklyRateClean.toFixed(2) : '-'}<small>kg/주</small></div>
+      </div>`;
+  }).join('');
+
+  // ---- 차트 ----
+  const allDates = [...new Set(datasets.flatMap(d => d.recs.map(r => r.date)))].sort();
+  const chartDatasets = [];
+  datasets.forEach(({user, recs}) => {
+    if (recs.length === 0) return;
+    const map = Object.fromEntries(recs.map(r => [r.date, r.weight]));
+    chartDatasets.push({
+      label: user.name,
+      data: allDates.map(d => map[d] ?? null),
+      borderColor: user.color,
+      backgroundColor: user.color,
+      spanGaps: true,
+      tension: 0.3,
+      pointRadius: 3,
+      pointHoverRadius: 5
+    });
+
+    // 추세선
+    const dayPoints = recs.map(r => ({x: (new Date(r.date) - new Date(recs[0].date))/86400000, y: r.weight}));
+    const trend = linearTrend(dayPoints);
+    if (trend){
+      chartDatasets.push({
+        label: user.name + ' 추세',
+        data: allDates.map(d => {
+          const dayIdx = (new Date(d) - new Date(recs[0].date))/86400000;
+          if (dayIdx < 0) return null;
+          return trend.slope*dayIdx + trend.intercept;
+        }),
+        borderColor: user.color,
+        borderDash: [5,4],
+        borderWidth: 1.5,
+        pointRadius: 0,
+        spanGaps: true,
+        tension: 0
+      });
+    }
+  });
+
+  const ctx = document.getElementById('weightChart');
+  if (chartInstance) chartInstance.destroy();
+  chartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: allDates.map(fmtDate),
+      datasets: chartDatasets
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { labels: { boxWidth: 10, font: { size: 11 } } },
+        tooltip: { filter: (item) => !item.dataset.label.includes('추세') }
+      },
+      scales: {
+        y: { ticks: { font: { size: 11 } } },
+        x: { ticks: { font: { size: 10 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 6 } }
+      }
+    }
+  });
+  ctx.parentElement.style.height = '260px';
+
+  // ---- 최근 기록 리스트 ----
+  const recent = [...state.records].sort((a,b) => b.date.localeCompare(a.date)).slice(0, 8);
+  document.getElementById('recentList').innerHTML = recent.map(r => `
+    <div class="recent-row">
+      <div><span class="d">${fmtDate(r.date)}</span><span class="u">${r.user}</span></div>
+      <div class="w">${r.weight}kg</div>
+    </div>`).join('') || `<div style="color:var(--sub);font-size:13px;">기록이 없어요</div>`;
+}
+
+/* ---------------- 렌더: 사진 탭 ---------------- */
+function photoRecs(){
+  return recordsFor(state.photoUser).filter(r => r.photoUrl);
+}
+function renderPhotoTab(){
+  paintActiveStates();
+  const recs = photoRecs();
+  const main = document.getElementById('photoMain');
+  const slider = document.getElementById('photoSlider');
+
+  if (recs.length === 0){
+    main.innerHTML = `<div class="empty">아직 등록된 사진이 없어요</div>`;
+    document.getElementById('filmstrip').innerHTML = '';
+    slider.max = 0;
+    renderCompare();
+    return;
+  }
+
+  state.photoIndex = Math.min(state.photoIndex, recs.length-1);
+  slider.max = recs.length - 1;
+  slider.value = state.photoIndex;
+
+  const r = recs[state.photoIndex];
+  const first = recs[0];
+  const diff = (r.weight - first.weight);
+  const sign = diff > 0 ? '+' : '';
+  main.innerHTML = `
+    <img src="${r.photoUrl}">
+    <div class="photo-caption">
+      <div class="date">${r.date}</div>
+      <div class="weight">${r.weight}kg <span class="diff">${state.photoIndex>0 ? sign+diff.toFixed(1)+'kg' : '시작'}</span></div>
+    </div>`;
+
+  document.getElementById('filmstrip').innerHTML = recs.map((rec,i) =>
+    `<img src="${rec.photoUrl}" class="${i===state.photoIndex?'active':''}" data-i="${i}">`
+  ).join('');
+  document.querySelectorAll('#filmstrip img').forEach(img => {
+    img.onclick = () => { state.photoIndex = Number(img.dataset.i); stopPlay(); renderPhotoTab(); };
+  });
+
+  renderCompare();
+}
+
+function stepPhoto(delta){
+  const recs = photoRecs();
+  if (recs.length === 0) return;
+  state.photoIndex = (state.photoIndex + delta + recs.length) % recs.length;
+  renderPhotoTab();
+}
+
+function togglePlay(){
+  const btn = document.getElementById('photoPlay');
+  if (state.isPlaying){
+    stopPlay();
+  } else {
+    const recs = photoRecs();
+    if (recs.length < 2) { showToast('재생하려면 사진이 2장 이상 필요해요'); return; }
+    state.isPlaying = true;
+    btn.textContent = '⏸';
+    state.playTimer = setInterval(() => stepPhoto(1), 900);
+  }
+}
+function stopPlay(){
+  state.isPlaying = false;
+  document.getElementById('photoPlay').textContent = '▶';
+  clearInterval(state.playTimer);
+}
+
+function renderCompare(){
+  const recs = photoRecs();
+  const beforeSel = document.getElementById('compareBefore');
+  const afterSel = document.getElementById('compareAfter');
+  const wrap = document.getElementById('compareWrap');
+
+  if (recs.length < 2){
+    beforeSel.innerHTML = '';
+    afterSel.innerHTML = '';
+    wrap.innerHTML = `<div class="empty" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--sub);font-size:13px;">사진이 2장 이상 필요해요</div>`;
+    return;
+  }
+
+  const opts = recs.map((r,i) => `<option value="${i}">${r.date} (${r.weight}kg)</option>`).join('');
+  if (!beforeSel.dataset.bound){
+    beforeSel.innerHTML = opts;
+    afterSel.innerHTML = opts;
+    beforeSel.value = 0;
+    afterSel.value = recs.length - 1;
+    beforeSel.dataset.bound = '1';
+    afterSel.dataset.bound = '1';
+    beforeSel.onchange = renderCompareImages;
+    afterSel.onchange = renderCompareImages;
+  } else {
+    beforeSel.innerHTML = opts;
+    afterSel.innerHTML = opts;
+    if (Number(beforeSel.value) >= recs.length) beforeSel.value = 0;
+    if (Number(afterSel.value) >= recs.length) afterSel.value = recs.length - 1;
+  }
+  renderCompareImages();
+}
+
+function renderCompareImages(){
+  const recs = photoRecs();
+  if (recs.length < 2) return;
+  const b = recs[Number(document.getElementById('compareBefore').value)];
+  const a = recs[Number(document.getElementById('compareAfter').value)];
+  const wrap = document.getElementById('compareWrap');
+  wrap.innerHTML = `
+    <img src="${b.photoUrl}">
+    <div class="after-clip" id="afterClip" style="width:50%;">
+      <img src="${a.photoUrl}" style="width:${wrap.clientWidth}px;max-width:none;">
+    </div>
+    <div class="compare-handle" id="compareHandle" style="left:50%;"></div>
+    <div class="compare-label left">${b.date}</div>
+    <div class="compare-label right">${a.date}</div>
+  `;
+  const afterImg = wrap.querySelector('.after-clip img');
+  afterImg.style.width = wrap.clientWidth + 'px';
+
+  const clip = document.getElementById('afterClip');
+  const handle = document.getElementById('compareHandle');
+  let dragging = false;
+
+  function setPos(clientX){
+    const rect = wrap.getBoundingClientRect();
+    let pct = ((clientX - rect.left) / rect.width) * 100;
+    pct = Math.max(0, Math.min(100, pct));
+    clip.style.width = pct + '%';
+    handle.style.left = pct + '%';
+  }
+  handle.addEventListener('pointerdown', (e) => { dragging = true; e.preventDefault(); });
+  window.addEventListener('pointermove', (e) => { if (dragging) setPos(e.clientX); });
+  window.addEventListener('pointerup', () => dragging = false);
+  wrap.addEventListener('click', (e) => setPos(e.clientX));
+}
+
+/* ---------------- 탭 전환 ---------------- */
+function switchTab(name){
+  document.querySelectorAll('section.tab').forEach(s => s.classList.toggle('active', s.id === 'tab-' + name));
+  document.querySelectorAll('nav.tabbar button').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+  if (name !== 'photos') stopPlay();
+  if (name === 'stats') renderStatsTab();
+  if (name === 'photos') renderPhotoTab();
+}
+
+function renderAll(){
+  document.getElementById('setupBanner').classList.toggle('show', !isConfigured());
+  document.getElementById('submitBtn').disabled = !isConfigured();
+  renderRecordTab();
+  renderStatsTab();
+  renderPhotoTab();
+}
+
+/* ---------------- 초기화 ---------------- */
+function init(){
+  initToggles();
+  bindPhotoInput();
+  document.getElementById('submitBtn').onclick = submitRecord;
+  document.querySelectorAll('nav.tabbar button').forEach(b => b.onclick = () => switchTab(b.dataset.tab));
+  document.getElementById('photoPrev').onclick = () => { stopPlay(); stepPhoto(-1); };
+  document.getElementById('photoNext').onclick = () => { stopPlay(); stepPhoto(1); };
+  document.getElementById('photoPlay').onclick = togglePlay;
+  document.getElementById('photoSlider').oninput = (e) => { stopPlay(); state.photoIndex = Number(e.target.value); renderPhotoTab(); };
+
+  document.getElementById('setupBanner').classList.toggle('show', !isConfigured());
+  document.getElementById('submitBtn').disabled = !isConfigured();
+
+  loadRecords();
+}
+init();
+</script>
+
+<div class="footer-credit">Developed by Donggu Kang</div>
+</body>
+</html>

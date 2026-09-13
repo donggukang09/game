@@ -618,7 +618,7 @@ async function loadRecords(){
       state.records = (res.records || [])
         .filter(r => r.date && !isNaN(Number(r.weight)))
         .map(r => ({
-          date: r.date,
+          date: normalizeDateStr(r.date),
           user: userByName(r.user) ? r.user : r.user, // 이름 그대로 저장
           userId: (userByName(r.user) || {}).id || null,
           weight: Number(r.weight),
@@ -664,10 +664,11 @@ function resizeImageToBase64(file, maxWidth = 1080, quality = 0.82){
 /* ---------------- 저장(쓰기) ---------------- */
 async function submitRecord(){
   const user = userById(state.recordUser);
-  const date = document.getElementById('inputDate').value;
+  const date = normalizeDateStr(document.getElementById('inputDate').value);
   const weight = document.getElementById('inputWeight').value;
 
   if (!date){ showToast('날짜를 선택해주세요'); return; }
+  if (!isValidDateStr(date)){ showToast('날짜 형식이 올바르지 않아요. 날짜를 다시 선택해주세요'); return; }
   if (!weight || isNaN(Number(weight))){ showToast('체중을 입력해주세요'); return; }
   if (!isConfigured()){ showToast('먼저 설정을 완료해주세요'); return; }
 
@@ -724,6 +725,19 @@ function todayStr(){
   const d = new Date();
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
+function isValidDateStr(s){
+  return /^\d{4}-\d{2}-\d{2}$/.test(String(s || ''));
+}
+// 시트/입력값이 어떤 형태(., /, T시간 등)로 들어와도 YYYY-MM-DD로 정규화
+function normalizeDateStr(input){
+  const s = String(input || '').trim();
+  if (isValidDateStr(s)) return s;
+  const m = s.match(/(\d{4})\D+(\d{1,2})\D+(\d{1,2})/);
+  if (m){
+    return `${m[1]}-${String(m[2]).padStart(2,'0')}-${String(m[3]).padStart(2,'0')}`;
+  }
+  return s; // 정규화 실패 시 원본 유지 (표시 단계에서 방어 처리)
+}
 function mondayOf(dateStr){
   const d = new Date(dateStr + 'T00:00:00');
   const day = (d.getDay() + 6) % 7; // 월=0
@@ -735,7 +749,9 @@ function recordsFor(userId){
   return state.records.filter(r => r.user === name);
 }
 function fmtDate(dateStr){
-  const [y,m,d] = dateStr.split('-');
+  const norm = normalizeDateStr(dateStr);
+  if (!isValidDateStr(norm)) return dateStr || '-';
+  const [y,m,d] = norm.split('-');
   return `${Number(m)}.${Number(d)}`;
 }
 function showToast(msg){
